@@ -1,0 +1,179 @@
+"","Fecha","Capita","Diagnostico","Sala","Cantidad"
+"1",2021-01-02,"Capita","CoVid 19","GUARDIA",4
+"2",2021-01-03,"Capita","CoVid 19","GUARDIA",5
+"3",2021-01-04,"Capita","CoVid 19","GUARDIA",5
+"4",2021-01-05,"Capita","CoVid 19","GUARDIA",5
+"5",2021-01-06,"Capita","CoVid 19","GUARDIA",4
+"6",2021-01-07,"Capita","CoVid 19","GUARDIA",4
+"7",2021-01-08,"Capita","CoVid 19","GUARDIA",5
+"8",2021-01-09,"Capita","CoVid 19","GUARDIA",3
+"9",2021-01-10,"Capita","CoVid 19","GUARDIA",4
+"10",2021-01-11,"Capita","CoVid 19","GUARDIA",3
+"11",2021-01-12,"Capita","CoVid 19","GUARDIA",2
+"12",2021-01-02,"Capita","CoVid 19","PISO",10
+"13",2021-01-03,"Capita","CoVid 19","PISO",11
+"14",2021-01-04,"Capita","CoVid 19","PISO",12
+"15",2021-01-05,"Capita","CoVid 19","PISO",11
+"16",2021-01-06,"Capita","CoVid 19","PISO",10
+"17",2021-01-07,"Capita","CoVid 19","PISO",12
+"18",2021-01-08,"Capita","CoVid 19","PISO",9
+"19",2021-01-09,"Capita","CoVid 19","PISO",8
+"20",2021-01-10,"Capita","CoVid 19","PISO",5
+"21",2021-01-11,"Capita","CoVid 19","PISO",5
+"22",2021-01-12,"Capita","CoVid 19","PISO",4
+"23",2021-01-13,"Capita","CoVid 19","PISO",2
+"24",2021-01-14,"Capita","CoVid 19","PISO",1
+"25",2021-01-02,"Capita","CoVid 19","UTI",3
+"26",2021-01-03,"Capita","CoVid 19","UTI",3
+"27",2021-01-04,"Capita","CoVid 19","UTI",3
+"28",2021-01-05,"Capita","CoVid 19","UTI",3
+"29",2021-01-06,"Capita","CoVid 19","UTI",3
+"30",2021-01-07,"Capita","CoVid 19","UTI",2
+"31",2021-01-08,"Capita","CoVid 19","UTI",2
+"32",2021-01-09,"Capita","CoVid 19","UTI",2
+"33",2021-01-10,"Capita","CoVid 19","UTI",2
+"34",2021-01-11,"Capita","CoVid 19","UTI",2
+"35",2021-01-12,"Capita","CoVid 19","UTI",2
+"36",2021-01-13,"Capita","CoVid 19","UTI",2
+"37",2021-01-14,"Capita","CoVid 19","UTI",2
+"38",2021-01-02,"Capita","Otros","GUARDIA",27
+"39",2021-01-03,"Capita","Otros","GUARDIA",28
+"40",2021-01-04,"Capita","Otros","GUARDIA",27
+"41",2021-01-05,"Capita","Otros","GUARDIA",23
+"42",2021-01-06,"Capita","Otros","GUARDIA",13
+"43",2021-01-07,"Capita","Otros","GUARDIA",11
+"44",2021-01-08,"Capita","Otros","GUARDIA",12
+"45",2021-01-09,"Capita","Otros","GUARDIA",15
+"46",2021-01-10,"Capita","Otros","GUARDIA",12
+"47",2021-01-11,"Capita","Otros","GUARDIA",9
+"48",2021-01-12,"Capita","Otros","GUARDIA",6
+"49",2021-01-13,"Capita","Otros","GUARDIA",5
+"50",2021-01-14,"Capita","Otros","GUARDIA",5
+"51",2021-01-15,"Capita","Otros","GUARDIA",1
+"52",2021-01-02,"Capita","Otros","PISO",48
+"53",2021-01-03,"Capita","Otros","PISO",52
+"54",2021-01-04,"Capita","Otros","PISO",57
+"55",2021-01-05,"Capita","Otros","PISO",60
+"56",2021-01-06,"Capita","Otros","PISO",56
+"57",2021-01-07,"Capita","Otros","PISO",52
+"58",2021-01-08,"Capita","Otros","PISO",44
+"59",2021-01-09,"Capita","Otros","PISO",31
+"60",2021-01-10,"Capita","Otros","PISO",27
+"61",2021-01-11,"Capita","Otros","PISO",26
+"62",2021-01-12,"Capita","Otros","PISO",20
+"63",2021-01-13,"Capita","Otros","PISO",12
+"64",2021-01-14,"Capita","Otros","PISO",5
+"65",2021-01-02,"Capita","Otros","UCO",4
+"66",2021-01-03,"Capita","Otros","UCO",5
+"67",2021-01-04,"Capita","Otros","UCO",5
+"68",2021-01-05,"Capita","Otros","UCO",5
+"69",2021-01-06,"Capita","Otros","UCO",4
+"70",2021-01-07,"Capita","Otros","UCO",3
+"71",2021-01-08,"Capita","Otros","UCO",3
+"72",2021-01-09,"Capita","Otros","UCO",2
+"73",2021-01-10,"Capita","Otros","UCO",2
+"74",2021-01-11,"Capita","Otros","UCO",1
+"75",2021-01-12,"Capita","Otros","UCO",1
+"76",2021-01-13,"Capita","Otros","UCO",1
+"77",2021-01-02,"Capita","Otros","UTI",6
+"78",2021-01-03,"Capita","Otros","UTI",6
+"79",2021-01-04,"Capita","Otros","UTI",6
+"80",2021-01-05,"Capita","Otros","UTI",4
+"81",2021-01-06,"Capita","Otros","UTI",4
+"82",2021-01-07,"Capita","Otros","UTI",4
+"83",2021-01-08,"Capita","Otros","UTI",4
+"84",2021-01-09,"Capita","Otros","UTI",3
+"85",2021-01-10,"Capita","Otros","UTI",4
+"86",2021-01-11,"Capita","Otros","UTI",4
+"87",2021-01-12,"Capita","Otros","UTI",2
+"88",2021-01-13,"Capita","Otros","UTI",1
+"89",2021-01-14,"Capita","Otros","UTI",1
+"90",2021-01-02,"ExtraCapita","CoVid 19","GUARDIA",5
+"91",2021-01-03,"ExtraCapita","CoVid 19","GUARDIA",6
+"92",2021-01-04,"ExtraCapita","CoVid 19","GUARDIA",5
+"93",2021-01-05,"ExtraCapita","CoVid 19","GUARDIA",5
+"94",2021-01-06,"ExtraCapita","CoVid 19","GUARDIA",3
+"95",2021-01-07,"ExtraCapita","CoVid 19","GUARDIA",3
+"96",2021-01-08,"ExtraCapita","CoVid 19","GUARDIA",1
+"97",2021-01-14,"ExtraCapita","CoVid 19","GUARDIA",1
+"98",2021-01-02,"ExtraCapita","CoVid 19","PISO",13
+"99",2021-01-03,"ExtraCapita","CoVid 19","PISO",13
+"100",2021-01-04,"ExtraCapita","CoVid 19","PISO",15
+"101",2021-01-05,"ExtraCapita","CoVid 19","PISO",14
+"102",2021-01-06,"ExtraCapita","CoVid 19","PISO",11
+"103",2021-01-07,"ExtraCapita","CoVid 19","PISO",13
+"104",2021-01-08,"ExtraCapita","CoVid 19","PISO",13
+"105",2021-01-09,"ExtraCapita","CoVid 19","PISO",11
+"106",2021-01-10,"ExtraCapita","CoVid 19","PISO",9
+"107",2021-01-11,"ExtraCapita","CoVid 19","PISO",9
+"108",2021-01-12,"ExtraCapita","CoVid 19","PISO",6
+"109",2021-01-13,"ExtraCapita","CoVid 19","PISO",1
+"110",2021-01-14,"ExtraCapita","CoVid 19","PISO",1
+"111",2021-01-02,"ExtraCapita","CoVid 19","UTI",2
+"112",2021-01-03,"ExtraCapita","CoVid 19","UTI",3
+"113",2021-01-04,"ExtraCapita","CoVid 19","UTI",3
+"114",2021-01-05,"ExtraCapita","CoVid 19","UTI",3
+"115",2021-01-06,"ExtraCapita","CoVid 19","UTI",3
+"116",2021-01-07,"ExtraCapita","CoVid 19","UTI",3
+"117",2021-01-08,"ExtraCapita","CoVid 19","UTI",2
+"118",2021-01-09,"ExtraCapita","CoVid 19","UTI",2
+"119",2021-01-10,"ExtraCapita","CoVid 19","UTI",2
+"120",2021-01-11,"ExtraCapita","CoVid 19","UTI",2
+"121",2021-01-12,"ExtraCapita","CoVid 19","UTI",1
+"122",2021-01-13,"ExtraCapita","CoVid 19","UTI",1
+"123",2021-01-02,"ExtraCapita","Otros","GUARDIA",11
+"124",2021-01-03,"ExtraCapita","Otros","GUARDIA",11
+"125",2021-01-04,"ExtraCapita","Otros","GUARDIA",9
+"126",2021-01-05,"ExtraCapita","Otros","GUARDIA",11
+"127",2021-01-06,"ExtraCapita","Otros","GUARDIA",9
+"128",2021-01-07,"ExtraCapita","Otros","GUARDIA",9
+"129",2021-01-08,"ExtraCapita","Otros","GUARDIA",8
+"130",2021-01-09,"ExtraCapita","Otros","GUARDIA",5
+"131",2021-01-10,"ExtraCapita","Otros","GUARDIA",3
+"132",2021-01-11,"ExtraCapita","Otros","GUARDIA",3
+"133",2021-01-12,"ExtraCapita","Otros","GUARDIA",3
+"134",2021-01-13,"ExtraCapita","Otros","GUARDIA",3
+"135",2021-01-14,"ExtraCapita","Otros","GUARDIA",2
+"136",2021-01-02,"ExtraCapita","Otros","NEO",1
+"137",2021-01-03,"ExtraCapita","Otros","NEO",1
+"138",2021-01-04,"ExtraCapita","Otros","NEO",1
+"139",2021-01-05,"ExtraCapita","Otros","NEO",1
+"140",2021-01-06,"ExtraCapita","Otros","NEO",1
+"141",2021-01-07,"ExtraCapita","Otros","NEO",1
+"142",2021-01-08,"ExtraCapita","Otros","NEO",1
+"143",2021-01-09,"ExtraCapita","Otros","NEO",1
+"144",2021-01-10,"ExtraCapita","Otros","NEO",1
+"145",2021-01-11,"ExtraCapita","Otros","NEO",1
+"146",2021-01-12,"ExtraCapita","Otros","NEO",1
+"147",2021-01-13,"ExtraCapita","Otros","NEO",1
+"148",2021-01-14,"ExtraCapita","Otros","NEO",1
+"149",2021-01-02,"ExtraCapita","Otros","PISO",22
+"150",2021-01-03,"ExtraCapita","Otros","PISO",19
+"151",2021-01-04,"ExtraCapita","Otros","PISO",22
+"152",2021-01-05,"ExtraCapita","Otros","PISO",23
+"153",2021-01-06,"ExtraCapita","Otros","PISO",24
+"154",2021-01-07,"ExtraCapita","Otros","PISO",23
+"155",2021-01-08,"ExtraCapita","Otros","PISO",22
+"156",2021-01-09,"ExtraCapita","Otros","PISO",15
+"157",2021-01-10,"ExtraCapita","Otros","PISO",15
+"158",2021-01-11,"ExtraCapita","Otros","PISO",15
+"159",2021-01-12,"ExtraCapita","Otros","PISO",8
+"160",2021-01-13,"ExtraCapita","Otros","PISO",2
+"161",2021-01-14,"ExtraCapita","Otros","PISO",1
+"162",2021-01-02,"ExtraCapita","Otros","UCO",2
+"163",2021-01-03,"ExtraCapita","Otros","UCO",1
+"164",2021-01-04,"ExtraCapita","Otros","UCO",1
+"165",2021-01-12,"ExtraCapita","Otros","UCO",1
+"166",2021-01-13,"ExtraCapita","Otros","UCO",1
+"167",2021-01-02,"ExtraCapita","Otros","UTI",3
+"168",2021-01-03,"ExtraCapita","Otros","UTI",3
+"169",2021-01-04,"ExtraCapita","Otros","UTI",2
+"170",2021-01-05,"ExtraCapita","Otros","UTI",3
+"171",2021-01-06,"ExtraCapita","Otros","UTI",1
+"172",2021-01-07,"ExtraCapita","Otros","UTI",2
+"173",2021-01-08,"ExtraCapita","Otros","UTI",2
+"174",2021-01-09,"ExtraCapita","Otros","UTI",2
+"175",2021-01-10,"ExtraCapita","Otros","UTI",2
+"176",2021-01-11,"ExtraCapita","Otros","UTI",3
+"177",2021-01-12,"ExtraCapita","Otros","UTI",1
+"178",2021-01-13,"ExtraCapita","Otros","UTI",1

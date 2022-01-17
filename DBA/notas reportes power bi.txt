@@ -1,0 +1,1 @@
+El archivo cobranzas tenia 2 variables resultado que generaba un export. El resto estaba bien 
