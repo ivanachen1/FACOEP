@@ -1,22 +1,39 @@
-library(RPostgreSQL)
-library(data.table)
-library(tidyverse)
-library(stringr)
-library(openxlsx)
-library(scales)
-library(formattable)
-library(dplyr)
-library(plyr)
-library(zoo)
 
-pw <- {"facoep2017"} 
+workdirectory_one <- "C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/"
+workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
+
+source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
+
+archivo_parametros <- GetArchivoParametros(path_one = WorkdirectoryOne,
+                                           path_two = WorkdirectoryTwo,
+                                           file = "parametros_servidor.xlsx")
+
+
+pw <- GetPassword()
+
 drv <- dbDriver("PostgreSQL")
-con <- dbConnect(drv, dbname = "facoep", host = "172.31.24.12", port = 5432, user = "postgres", password = pw)
+
+user <- GetUser()
+
+host <- GetHost()
+con <- dbConnect(drv, dbname = "facoep", 
+                 host = host,
+                 port = 5432,
+                 user = user,
+                 password = pw)
+
+
+
+
+
+
+
+
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
 
 query <- "SELECT comprobanteccosto,
-                      CAST(c.comprobanteentidadcodigo AS TEXT) || ' - ' || CAST(obsocialessigla AS TEXT) as OS,
+                      CAST(os.clienteid AS TEXT) || ' - ' || CAST(os.clientenombre AS TEXT) as OS,
                       c.tipocomprobantecodigo,
                       c.comprobanteprefijo,
                       c.comprobantecodigo,
@@ -28,14 +45,11 @@ query <- "SELECT comprobanteccosto,
 
 
   FROM comprobantes c
-   LEFT JOIN obrassociales os ON os.obsocialesclienteid = c.comprobanteentidadcodigo
+   LEFT JOIN clientes os ON os.clienteid = c.comprobanteentidadcodigo
                                   
-  WHERE c.comprobantetipoentidad = 2"
+  WHERE c.comprobantetipoentidad = 2 and "
 
 
 
 Bruto <- dbGetQuery(con,query) 
 
-
-Bruto <- filter(Bruto, Bruto$os != "1003 - OSPAÃƒâ€˜A")
-Bruto <- filter(Bruto, Bruto$os != "1 - I.N.S.S.J. y P.")
