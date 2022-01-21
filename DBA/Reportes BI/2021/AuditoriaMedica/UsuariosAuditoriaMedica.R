@@ -101,5 +101,6 @@ AuditoriaMedica <- select(AuditoriaMedica,
                           AgregadoImporte,
                           ImporteFinal,
                           CentroCosto,
-                          SubCentroCosto)
+                          SubCentroCosto,
+                          IdCentrosCostos)
 

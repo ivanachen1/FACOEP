@@ -52,7 +52,7 @@ CONSULTA <- glue("SELECT crgfchemision,
                         
                         FROM crg c
                         LEFT JOIN crgdet cd ON c.crgnum = cd.crgnum and c.pprid = cd.pprid
-                        WHERE crgestado > 1 and crgfchemision BETWEEN '2021-01-01' AND '2021-06-30'")
+                        WHERE crgestado > 1")
 
 
 CONSULTA <- dbGetQuery(con,CONSULTA)
