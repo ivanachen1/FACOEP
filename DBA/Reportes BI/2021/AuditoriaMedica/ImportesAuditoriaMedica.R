@@ -1,6 +1,6 @@
 ########################################### LIBRERIAS ########################################################
-workdirectory_one <- "C:/Users/iachenbach/Desktop/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica/V2"
-workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranzas/Versi?n 7"
+workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica"
+workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/AuditoriaMedica/V2"
 
 source("C:/Users/iachenbach/Desktop/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica/V2/Script_AuditoriaMedica_Funciones.r")
 

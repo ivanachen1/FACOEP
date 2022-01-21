@@ -91,6 +91,8 @@ AuditoriaMedica$CantidadCRG <- 1
 AuditoriaMedica$CRG <- NULL
 AuditoriaMedica <- aggregate(.~FechaAuditoriaMedica+Auditor+CentroCosto+SubCentroCosto, AuditoriaMedica, sum)
 
+AuditoriaMedica$IdCentrosCostos <- paste(AuditoriaMedica$CentroCosto,AuditoriaMedica$SubCentroCosto,sep = "-")
+
 AuditoriaMedica <- select(AuditoriaMedica,
                           "Fecha" = FechaAuditoriaMedica,
                           Auditor,
