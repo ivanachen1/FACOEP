@@ -14,13 +14,9 @@ library(BBmisc)
 library(glue)
 
 
+
 GetArchivoParametros <- function(path_one,path_two,file){
-  x = "parametros_servidor.xlsx"
-  path_one <- workdirectory_one
-  path_two <- workdirectory_two
   intento  <- is.error(try(read.xlsx(paste(path_two,file,sep = "/")),silent = F,outFile = "Error"))
-  
-  
   if(intento == TRUE){
     return(read.xlsx(paste(path_one,file,sep = "/")))} else {return(read.xlsx(paste(path_two,file,sep = "/")))}
 }  

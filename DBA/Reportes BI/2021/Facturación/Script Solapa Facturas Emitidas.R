@@ -1,10 +1,26 @@
+library(glue)
 
 workdirectory_one <- "C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/"
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
 
-source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
+#source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
 
-archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one,
+
+
+GetFileAux <- function(path_one,path_two,file){
+  intento  <- is.error(try(source(paste(path_two,file,sep = "/")),silent = F,outFile = "Error"))
+  if(intento == TRUE){
+    return(source(paste(path_one,file,sep = "/")))} else {return(source(paste(path_two,file,sep = "/")))}
+} 
+
+
+GetFileAux(path_one = workdirectory_one,
+           path_two = workdirectory_two,
+           file = "Script_Facturacion_Funciones.R")
+
+
+
+archivo_parametros <- GetConfiguracionFile(path_one = workdirectory_one,
                                            path_two = workdirectory_two,
                                            file = "parametros_servidor.xlsx")
 
