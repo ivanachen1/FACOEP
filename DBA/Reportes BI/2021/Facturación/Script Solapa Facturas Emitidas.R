@@ -1,26 +1,24 @@
-library(glue)
-
-workdirectory_one <- "C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/"
+workdirectory_one <- "C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación"
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
-
+Archivo <-"Script_Facturacion_Funciones.R"
 #source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
 
 
-
-GetFileAux <- function(path_one,path_two,file){
-  intento  <- is.error(try(source(paste(path_two,file,sep = "/")),silent = F,outFile = "Error"))
-  if(intento == TRUE){
-    return(source(paste(path_one,file,sep = "/")))} else {return(source(paste(path_two,file,sep = "/")))}
-} 
-
-
-GetFileAux(path_one = workdirectory_one,
-           path_two = workdirectory_two,
-           file = "Script_Facturacion_Funciones.R")
+GetFileAux <- function(workdirectory_one,workdirectory_two,Archivo){
+  intento <- try(source(paste(workdirectory_one,Archivo,sep = "/")),silent = TRUE)
+  if (class(intento) == "try-error"){
+    return(source(paste(workdirectory_two,Archivo,sep = "/")))} else {return(source(paste(workdirectory_one,Archivo,sep = "/")))}
+}
 
 
 
-archivo_parametros <- GetConfiguracionFile(path_one = workdirectory_one,
+GetFileAux(workdirectory_one = workdirectory_one,
+           workdirectory_two = workdirectory_two,
+           Archivo = "Script_Facturacion_Funciones.R")
+
+
+
+archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one,
                                            path_two = workdirectory_two,
                                            file = "parametros_servidor.xlsx")
 
@@ -76,11 +74,6 @@ comprobantes <- glue("SELECT comprobanteccosto,
 comprobantes <- dbGetQuery(con,comprobantes) 
 
 comprobantes <- CleanTablaComprobantes(comprobantes)
-
-#Revisar esta funcion
-#comprobantes$comprobanteccosto <- ifelse(is.null(comprobantes$comprobanteccosto),5,comprobantes$comprobanteccosto)
-
-unique(comprobantes$comprobanteccosto)
 
 comprobantes <- left_join(comprobantes,CentrosCostos,by = c("comprobanteccosto" = "id.centro.costo"))
 
