@@ -45,8 +45,5 @@ CodigosOOSSDesestimar <- GetFile(file_name = "Codigos Obra Social a Desestimar.x
                                  path_one = workdirectory_one,
                                  path_two = workdirectory_two)
 
-FacturasPami <- GetFile(file_name = "FacturasPAMI.xlsx",
-                        path_one = workdirectory_one,
-                        path_two = workdirectory_two)
 
-FacturasPami$Emision <- as.Date(FacturasPami$Emision)
+
