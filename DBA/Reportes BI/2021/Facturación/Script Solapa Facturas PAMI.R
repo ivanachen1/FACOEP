@@ -17,9 +17,78 @@ GetFileAux(workdirectory_one = workdirectory_one,
            Archivo = "Script_Facturacion_Funciones.R")
 
 
-FacturasPami <- GetFile(file_name = "FacturasPAMI.xlsx",
-                        path_one = workdirectory_one,
-                        path_two = workdirectory_two)
 
-FacturasPami$Emision <- as.Date(FacturasPami$Emision,origin = "1899-12-30")
+archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one,
+                                           path_two = workdirectory_two,
+                                           file = "parametros_servidor.xlsx")
 
+tipo_comprobantes <- GetFile("tipo_comprobante.xlsx",
+                             path_one = workdirectory_one,
+                             path_two = workdirectory_two)
+
+
+tipo_comprobantes$Comprobante <- tipo_comprobantes$Tipo.Comprobante
+
+
+comprobantes_query <- GetListaINSQL(tipo_comprobantes)
+
+tipo_comprobantes <- select(tipo_comprobantes,Comprobante,Multiplicador,TipoPami)
+
+CentrosCostos  <- GetFile("centro_costo_comprobantes.xlsx",
+                          path_one = workdirectory_one,
+                          path_two = workdirectory_two)
+
+pw <- GetPassword()
+
+drv <- dbDriver("PostgreSQL")
+
+user <- GetUser()
+
+host <- GetHost()
+
+con <- dbConnect(drv, dbname = "facoep", 
+                 host = host,
+                 port = 5432,
+                 user = user,
+                 password = pw)
+
+
+postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
+
+############################################## CONSULTAS ######################################################
+
+nuevo_pami <- glue("SELECT comprobantefechaemision as mes,
+                                         tipocomprobantecodigo,
+                                         comprobanteprefijo,
+                                         comprobantecodigo,
+                                         ccostodescripcion, 
+                                         sccostodescripcion,
+                                         tpoliqdescripcion,
+                                         comprobantetotalimporte,
+                                         comprobantedetalle
+
+                         FROM comprobantes c
+                         LEFT JOIN centrocostos cc ON c.comprobanteccosto = cc.ccostocodigo
+                         LEFT JOIN subcentrocostos sc ON c.comprobanteccosto = sc.ccostocodigo and c.comprobantesccosto = sc.sccostocodigo
+                         LEFT JOIN tipoliquidacion tp ON tp.tpoliqcodigo = c.comprobantetipoliq and tp.ccostocodigo = c.comprobanteccosto and tp.sccostocodigo = c.comprobantesccosto
+                         WHERE comprobanteccosto = 1 and comprobantefechaemision >= '2021-01-01' and tipocomprobantecodigo IN ({comprobantes_query})
+                                and comprobantedetalle not like '%ANULA%'")
+
+
+nuevo_pami <- dbGetQuery(con,nuevo_pami)
+
+nuevo_pami <- CleanTablaComprobantes(nuevo_pami)
+
+nuevo_pami <- left_join(nuevo_pami,tipo_comprobantes,by = c("tipocomprobantecodigo" = "Comprobante"))
+
+
+nuevo_pami$comprobantetotalimporte <- nuevo_pami$comprobantetotalimporte * nuevo_pami$Multiplicador
+  
+nuevo_pami$tipo <- nuevo_pami$TipoPami
+
+nuevo_pami$TipoPami <- NULL
+
+nuevo_pami$comprobantetotalimporte <- ifelse(nuevo_pami$sccostodescripcion == "CAPITA CLIENTE", 0,
+                                       nuevo_pami$comprobantetotalimporte)
+
+# faltaria quitar el hardcodeo de la linea 93 de "CAPITA CLIENTE"
