@@ -1,5 +1,6 @@
 workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
+workdirectory_three <- "E:/Personales/Sistemas/Estadisticas"
 Archivo <-"Script_Facturacion_Funciones.R"
 #source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
 
@@ -57,7 +58,7 @@ postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
 ############################################## CONSULTAS ######################################################
 
-nuevo_pami <- glue("SELECT comprobantefechaemision as mes,
+nuevo_pami <- glue("SELECT comprobantefechaemision as emision,
                                          tipocomprobantecodigo,
                                          comprobanteprefijo,
                                          comprobantecodigo,
@@ -88,7 +89,28 @@ nuevo_pami$tipo <- nuevo_pami$TipoPami
 
 nuevo_pami$TipoPami <- NULL
 
+nuevo_pami$Multiplicador <- NULL
+
 nuevo_pami$comprobantetotalimporte <- ifelse(nuevo_pami$sccostodescripcion == "CAPITA CLIENTE", 0,
                                        nuevo_pami$comprobantetotalimporte)
 
-# faltaria quitar el hardcodeo de la linea 93 de "CAPITA CLIENTE"
+DetallesPAMICapita <- GetFile("Detalles PAMI Cápita.xlsx",
+                              path_one = workdirectory_one,
+                              path_two = workdirectory_two)
+
+
+DetallesPAMICapita$Emision <- as.Date(DetallesPAMICapita$Emision,origin = "1899-12-30")
+
+
+
+
+
+
+
+
+
+
+
+
+
+rm(CentrosCostos,con,drv,tipo_comprobantes,archivo_parametros)
