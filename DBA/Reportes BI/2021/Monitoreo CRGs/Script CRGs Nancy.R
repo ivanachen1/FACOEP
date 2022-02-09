@@ -23,6 +23,7 @@ con <- dbConnect(drv, dbname = "facoep",
 print(con)
 
 workdirectory <- GetWorkDirectory(x = archivo_parametros)
+print(paste(workdirectory,"Prestaciones Nancy.xlsx"))
 separador <- ("/")
 
 
@@ -75,7 +76,6 @@ CRGsFacturados$factura <- gsub(" ","",CRGsFacturados$factura)
 
 CRGsFacturados$prestacion <- gsub(" ","",CRGsFacturados$prestacion)
 
-
 CRGsFacturados <- select(CRGsFacturados,
                          "Efector" = efector,
                          "Factura" = factura,
@@ -83,7 +83,7 @@ CRGsFacturados <- select(CRGsFacturados,
                          "NroCrg" = comprobantecrgnro,
                          "Fecha Emision CRG" = crgfchemision,
                          "Importe del CRG" = importecrg,
-                         )
+)
 
 
 #SOLAPA 2 DEL REPORTE
@@ -101,11 +101,11 @@ QueryCrgs <- glue("SELECT det.crgnum as NroCrg,
              
                   LEFT JOIN crgdet det ON cd.crgnum = det.crgnum 
                                        and cd.pprid = det.pprid
+                  
              
                   WHERE det.crgdetpractica IN ({prestaciones})")
 
 
-print(QueryCrgs)
 
 CRGPorEstados <- dbGetQuery(con,QueryCrgs)
 
@@ -130,5 +130,3 @@ EstadosCrgs <- read.xlsx(paste(workdirectory,"Estados CRGs.xlsx",sep = separador
 print(prestaciones)
 #El campo Cantidad hace referencia a la cantidad de prestaciones o practicas del 
 #mismo tipo dentro del CRG para la misma factura
-
-### traer la fecha de emision del CRG y de la factura como agregar la tarjeta de cantidad de CRGs
