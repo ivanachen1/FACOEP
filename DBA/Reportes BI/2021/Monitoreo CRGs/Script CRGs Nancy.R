@@ -82,17 +82,18 @@ CRGsFacturados <- select(CRGsFacturados,
                          "Prestacion" = prestacion,
                          "NroCrg" = comprobantecrgnro,
                          "Fecha Emision CRG" = crgfchemision,
-                         "Importe del CRG" = importecrg,
-)
+                         "Importe del CRG" = importecrg)
 
 
 #SOLAPA 2 DEL REPORTE
 
 
 QueryCrgs <- glue("SELECT det.crgnum as NroCrg,
+                  cd.crgfchemision as emisioncrg,
                   crgestado as CrgIdEstado,
                   det.crgdetpractica as Practica,
                   pp.pprid,
+                  det.crgdetimportecrg as importecrg,
                   pprnombre as Efector 
              
                   FROM crg cd
@@ -109,16 +110,14 @@ QueryCrgs <- glue("SELECT det.crgnum as NroCrg,
 
 CRGPorEstados <- dbGetQuery(con,QueryCrgs)
 
+CRGPorEstados <- select(CRGPorEstados,
+                         "Efector" = efector,
+                         "Prestacion" = practica,
+                         "NroCrg" = nrocrg,
+                         "Fecha Emision CRG" = emisioncrg,
+                         "EstadoCrg" = crgidestado,
+                         "Importe" = importecrg)
 
-CRGPorEstados$cantidad <- 1
-
-
-
-CRGPorEstados <- aggregate(CRGPorEstados$cantidad,
-                  by = list(CRGPorEstados$efector,CRGPorEstados$crgidestado,CRGPorEstados$nrocrg,CRGPorEstados$practica),
-                  FUN = sum)
-
-colnames(CRGPorEstados) <- c("Efector","EstadoCrg","NroCRG","Prestacion","Cantidad")
 
 # Cierra todo
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
