@@ -60,3 +60,4 @@ GetWorkDirectory <- function(x = archivo_parametros){
   workdirectory <- filter(workdirectory,Usar == TRUE)
   workdirectory <- workdirectory$Valor
   return(workdirectory)}
+

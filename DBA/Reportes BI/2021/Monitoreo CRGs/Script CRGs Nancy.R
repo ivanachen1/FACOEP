@@ -44,30 +44,55 @@ comprobantes <- toString(sprintf("'%s'", comprobantes))
 
 print(comprobantes)
 print(prestaciones)
+
+PrestacionesNosumar <- GetFile("PrestacionesNoSumar.xlsx",
+                               path_one = path_one,
+                               path_two = path_two)
+
+
 #SOLAPA 1 DEL REPORTE
 
 
 QueryCrgsFacturados <- glue("SELECT
-              cd.comprobantepprid,
-              pprnombre as Efector,
-              CAST(cd.tipocomprobantecodigo AS TEXT) || ' - ' || CAST(cd.comprobanteprefijo AS TEXT) || ' - ' ||CAST(cd.comprobantecodigo AS TEXT) as factura,
-              cd.comprobantecrgdetpractica as Prestacion,
-              cd.comprobantecrgnro,
-              crg.crgfchemision,
-              cd.comprobantecrgdetimportecrg as ImporteCRG
-              
-              
-              FROM comprobantecrgdet cd
-              
-              LEFT JOIN 
-              crg ON cd.comprobantecrgnro = crg.crgnum and crg.pprid = cd.comprobantepprid
-              
-              
-              
-              LEFT JOIN 
-              proveedorprestador pp ON pp.pprid = cd.comprobantepprid
-              
-              WHERE cd.tipocomprobantecodigo IN ({comprobantes}) and cd.comprobantecrgdetpractica IN ({prestaciones})")
+                            det.pprid,
+                            det.crgnum as Nrocrg,
+                            det.crgdetnumerocph,
+                            aux.factura,
+                            aux.efector,
+                            aux.crgfchemision,
+                            aux.importecrg,
+                            aux.prestacion
+                            
+                            FROM crgdet det
+                            
+                            LEFT JOIN 
+                            proveedorprestador pp ON pp.pprid = det.pprid
+                            
+                            LEFT JOIN(
+                              SELECT
+                              cd.comprobantepprid,
+                              pprnombre as Efector,
+                              CAST(cd.tipocomprobantecodigo AS TEXT) || ' - ' || CAST(cd.comprobanteprefijo AS TEXT) || ' - ' ||CAST(cd.comprobantecodigo AS TEXT) as factura,
+                              cd.comprobantecrgdetpractica as Prestacion,
+                              cd.comprobantecrgnro,
+                              crg.crgfchemision,
+                              cd.comprobantecrgdetimportecrg as ImporteCRG
+                              
+                              
+                              FROM comprobantecrgdet cd
+                              
+                              LEFT JOIN 
+                              crg ON cd.comprobantecrgnro = crg.crgnum and crg.pprid = cd.comprobantepprid
+                              
+                              
+                              
+                              LEFT JOIN 
+                              proveedorprestador pp ON pp.pprid = cd.comprobantepprid
+                            ) as aux
+                            
+                            ON det.pprid = aux.comprobantepprid AND det.crgnum = aux.comprobantecrgnro 
+                            
+                            WHERE det.crgdetpractica IN ({prestaciones}) and aux.factura IS NOT NULL")
 
 
 CRGsFacturados <- dbGetQuery(con,QueryCrgsFacturados)
@@ -80,44 +105,84 @@ CRGsFacturados <- select(CRGsFacturados,
                          "Efector" = efector,
                          "Factura" = factura,
                          "Prestacion" = prestacion,
-                         "NroCrg" = comprobantecrgnro,
+                         "NroCrg" = nrocrg,
                          "Fecha Emision CRG" = crgfchemision,
-                         "Importe del CRG" = importecrg)
+                         "Importe del CRG" = importecrg,
+                         "Numero DPH" = crgdetnumerocph)
 
+CRGsFacturados <- left_join(CRGsFacturados,PrestacionesNosumar,by = c("Prestacion" = "Prestacion"))
+
+CRGsFacturados$Sumar[is.na(CRGsFacturados$Sumar)] <- TRUE
 
 #SOLAPA 2 DEL REPORTE
 
 
-QueryCrgs <- glue("SELECT det.crgnum as NroCrg,
+QueryCrgs <- glue("SELECT
+                      det.pprid,
+                      det.crgnum as Nrocrg,
+					            aux.emisioncrg,
+                      aux.CrgIdEstado,
+                      aux.Practica,
+                      pp.pprid,
+                      aux.idpractica,
+                      aux.importecrg,
+                      aux.fechaprestacion,
+                      aux.numerodph,
+                      aux.Efector
+              
+              
+                      FROM crgdet det
+              
+                      LEFT JOIN 
+                      proveedorprestador pp ON pp.pprid = det.pprid
+          
+                      
+                      LEFT JOIN (
+                      
+                      SELECT dets.crgnum as NroCrg,
                   cd.crgfchemision as emisioncrg,
                   crgestado as CrgIdEstado,
-                  det.crgdetpractica as Practica,
+                  dets.crgdetpractica as Practica,
                   pp.pprid,
-                  det.crgdetimportecrg as importecrg,
+                  dets.crgdetid as idpractica,
+                  dets.crgdetimportecrg as importecrg,
+                  dets.crgdetfechaprestacion as fechaprestacion,
+                  dets.crgdetnumerocph as numerodph,
                   pprnombre as Efector 
              
                   FROM crg cd
              
                   LEFT JOIN proveedorprestador pp ON pp.pprid = cd.pprid
              
-                  LEFT JOIN crgdet det ON cd.crgnum = det.crgnum 
-                                       and cd.pprid = det.pprid
-                  
-             
-                  WHERE det.crgdetpractica IN ({prestaciones})")
-
+                  LEFT JOIN crgdet dets ON cd.crgnum = dets.crgnum 
+                                       and cd.pprid = dets.pprid
+                      ) as aux
+                      
+                  ON det.pprid = aux.pprid AND det.crgnum = aux.nrocrg AND det.crgdetnumerocph = aux.numerodph
+				  
+				  WHERE det.crgdetpractica IN ({prestaciones})")
 
 
 CRGPorEstados <- dbGetQuery(con,QueryCrgs)
+
+CRGPorEstados$practica <- gsub(" ","",CRGPorEstados$practica)
 
 CRGPorEstados <- select(CRGPorEstados,
                          "Efector" = efector,
                          "Prestacion" = practica,
                          "NroCrg" = nrocrg,
+                         "IDPractica" = idpractica,
+                         "Fecha de Prestacion" = fechaprestacion,
+                         "numero de dph" = numerodph,
                          "Fecha Emision CRG" = emisioncrg,
                          "EstadoCrg" = crgidestado,
                          "Importe" = importecrg)
 
+
+
+CRGPorEstados <- left_join(CRGPorEstados,PrestacionesNosumar,by = c("Prestacion" = "Prestacion"))
+
+CRGPorEstados$Sumar[is.na(CRGPorEstados$Sumar)] <- TRUE
 
 # Cierra todo
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
