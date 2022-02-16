@@ -96,6 +96,8 @@ CRGPorEstados <- dbGetQuery(con,QueryCrgs)
 
 CRGPorEstados$practica <- gsub(" ","",CRGPorEstados$practica)
 
+CRGPorEstados <- unique(CRGPorEstados)
+
 CRGPorEstados <- select(CRGPorEstados,
                          "Efector" = efector,
                          "Prestacion" = practica,
@@ -121,5 +123,7 @@ rm(archivo_parametros,con,drv)
 EstadosCrgs <- read.xlsx(paste(workdirectory,"Estados CRGs.xlsx",sep = separador))
 
 print(prestaciones)
+
+
 #El campo Cantidad hace referencia a la cantidad de prestaciones o practicas del 
 #mismo tipo dentro del CRG para la misma factura

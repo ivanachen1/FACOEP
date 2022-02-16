@@ -111,6 +111,9 @@ CRGsFacturados <- select(CRGsFacturados,
                          "Importe del CRG" = importecrg,
                          "Numero DPH" = crgdetnumerocph)
 
+CRGsFacturados <- unique(CRGsFacturados)
+
+
 CRGsFacturados <- left_join(CRGsFacturados,PrestacionesNosumar,by = c("Prestacion" = "Prestacion"))
 
 CRGsFacturados$Sumar[is.na(CRGsFacturados$Sumar)] <- TRUE
