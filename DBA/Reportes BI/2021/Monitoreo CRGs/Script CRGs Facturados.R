@@ -72,6 +72,7 @@ QueryCrgsFacturados <- glue("SELECT
                               SELECT
                               cd.comprobantepprid,
                               pprnombre as Efector,
+                              cd.tipocomprobantecodigo as tipocomprobante,
                               CAST(cd.tipocomprobantecodigo AS TEXT) || ' - ' || CAST(cd.comprobanteprefijo AS TEXT) || ' - ' ||CAST(cd.comprobantecodigo AS TEXT) as factura,
                               cd.comprobantecrgdetpractica as Prestacion,
                               cd.comprobantecrgnro,
@@ -92,7 +93,7 @@ QueryCrgsFacturados <- glue("SELECT
                             
                             ON det.pprid = aux.comprobantepprid AND det.crgnum = aux.comprobantecrgnro 
                             
-                            WHERE det.crgdetpractica IN ({prestaciones}) and aux.factura IS NOT NULL")
+                            WHERE det.crgdetpractica IN ({prestaciones}) AND aux.tipocomprobante IN ({comprobantes}) AND aux.factura IS NOT NULL")
 
 
 CRGsFacturados <- dbGetQuery(con,QueryCrgsFacturados)
@@ -114,83 +115,4 @@ CRGsFacturados <- left_join(CRGsFacturados,PrestacionesNosumar,by = c("Prestacio
 
 CRGsFacturados$Sumar[is.na(CRGsFacturados$Sumar)] <- TRUE
 
-#SOLAPA 2 DEL REPORTE
-
-
-QueryCrgs <- glue("SELECT
-                      det.pprid,
-                      det.crgnum as Nrocrg,
-					            aux.emisioncrg,
-                      aux.CrgIdEstado,
-                      aux.Practica,
-                      pp.pprid,
-                      aux.idpractica,
-                      aux.importecrg,
-                      aux.fechaprestacion,
-                      aux.numerodph,
-                      aux.Efector
-              
-              
-                      FROM crgdet det
-              
-                      LEFT JOIN 
-                      proveedorprestador pp ON pp.pprid = det.pprid
-          
-                      
-                      LEFT JOIN (
-                      
-                      SELECT dets.crgnum as NroCrg,
-                  cd.crgfchemision as emisioncrg,
-                  crgestado as CrgIdEstado,
-                  dets.crgdetpractica as Practica,
-                  pp.pprid,
-                  dets.crgdetid as idpractica,
-                  dets.crgdetimportecrg as importecrg,
-                  dets.crgdetfechaprestacion as fechaprestacion,
-                  dets.crgdetnumerocph as numerodph,
-                  pprnombre as Efector 
-             
-                  FROM crg cd
-             
-                  LEFT JOIN proveedorprestador pp ON pp.pprid = cd.pprid
-             
-                  LEFT JOIN crgdet dets ON cd.crgnum = dets.crgnum 
-                                       and cd.pprid = dets.pprid
-                      ) as aux
-                      
-                  ON det.pprid = aux.pprid AND det.crgnum = aux.nrocrg AND det.crgdetnumerocph = aux.numerodph
-				  
-				  WHERE det.crgdetpractica IN ({prestaciones})")
-
-
-CRGPorEstados <- dbGetQuery(con,QueryCrgs)
-
-CRGPorEstados$practica <- gsub(" ","",CRGPorEstados$practica)
-
-CRGPorEstados <- select(CRGPorEstados,
-                         "Efector" = efector,
-                         "Prestacion" = practica,
-                         "NroCrg" = nrocrg,
-                         "IDPractica" = idpractica,
-                         "Fecha de Prestacion" = fechaprestacion,
-                         "numero de dph" = numerodph,
-                         "Fecha Emision CRG" = emisioncrg,
-                         "EstadoCrg" = crgidestado,
-                         "Importe" = importecrg)
-
-
-
-CRGPorEstados <- left_join(CRGPorEstados,PrestacionesNosumar,by = c("Prestacion" = "Prestacion"))
-
-CRGPorEstados$Sumar[is.na(CRGPorEstados$Sumar)] <- TRUE
-
-# Cierra todo
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
-
-rm(archivo_parametros,con,drv)
-
-EstadosCrgs <- read.xlsx(paste(workdirectory,"Estados CRGs.xlsx",sep = separador))
-
-print(prestaciones)
-#El campo Cantidad hace referencia a la cantidad de prestaciones o practicas del 
-#mismo tipo dentro del CRG para la misma factura
