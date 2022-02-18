@@ -43,61 +43,62 @@ PrestacionesNosumar <- GetFile("PrestacionesNoSumar.xlsx",
                                path_one = path_one,
                                path_two = path_two)
 
-
-
-IdentificadorUniverso <- glue("SELECT DISTINCT 
-                                      pprid,
-                                      crgnum,
-                                      crgdetnumerocph,
-                                      CONCAT(pprid ,'-', crgnum,'-',crgdetnumerocph) as id
-                                      
-                                      FROM crgdet det WHERE det.crgdetpractica IN ({prestaciones})")
-
-
-
-Universo <- dbGetQuery(con,IdentificadorUniverso)
-
-
-
 #SOLAPA 2 DEL REPORTE
 
+QueryUniverso <- glue("SELECT DISTINCT pprid,
+                                 crgnum,
+                                 CONCAT(pprid ,'-', crgnum) as id_detalle
+                  FROM crgdet WHERE crgdetpractica IN ({prestaciones})")
 
-QueryCrgs <- glue("SELECT det.pprid,
+print(QueryUniverso)
+
+Universo <- dbGetQuery(con,QueryUniverso)
+
+
+QueryCrgsSuma <- glue("SELECT det.pprid,
+                          pp.pprnombre as efector,
                           det.crgnum as Nrocrg,
                           det.crgdetnumerocph,
-                          det.crgdetpractica,
-                          det.crgdetid,
-                          det.crgdetimportecrg,
-                          det.crgdetfechaprestacion,
-                          det.crgdetnumerocph,
-                          crg.crgfchemision,
-					                aux2.idtest
+                          det.crgdetpractica as practica,
+                          det.crgdetid as idpractica,
+                          det.crgdetimportecrg as importecrg,
+                          det.crgdetfechaprestacion as fechaprestacion,
+                          det.crgdetnumerocph as numerodph,
+                          crg.crgfchemision as emisioncrg,
+                          crg.crgestado as crgidestado,
+					                aux2.id_test,
+					                aux2.id_detalle
 					  
                           FROM crgdet det
                           
                           LEFT JOIN crg
                           ON det.crgnum = crg.crgnum and crg.pprid = det.pprid
+                          
+                          LEFT JOIN 
+                          proveedorprestador pp ON pp.pprid = det.pprid
                       
                           LEFT JOIN(SELECT DISTINCT 
                                       pprid,
                                       crgnum,
                                       crgdetnumerocph,
-                                      CONCAT(pprid ,'-', crgnum,'-',crgdetnumerocph) as idtest                        
+                                      CONCAT(pprid ,'-', crgnum,'-',crgdetnumerocph) as id_test,
+                                      CONCAT(pprid ,'-', crgnum) as id_detalle
+                                      
                                       FROM crgdet det WHERE crgdetpractica IN ({prestaciones})) as aux2
                       
-                         ON CONCAT(det.pprid ,'-', det.crgnum,'-',det.crgdetnumerocph) = aux2.idtest
+                         ON CONCAT(det.pprid ,'-', det.crgnum,'-',det.crgdetnumerocph) = aux2.id_test
 					  
-					               WHERE aux2.idtest IS NOT NULL")
+					               WHERE aux2.id_test IS NOT NULL")
 
 
-CRGPorEstados <- dbGetQuery(con,QueryCrgs)
+CRGPorEstadosSuma <- dbGetQuery(con,QueryCrgsSuma)
 
 
-CRGPorEstados$practica <- gsub(" ","",CRGPorEstados$practica)
+CRGPorEstadosSuma$practica <- gsub(" ","",CRGPorEstadosSuma$practica)
 
-CRGPorEstados <- unique(CRGPorEstados)
+CRGPorEstadosSuma <- unique(CRGPorEstadosSuma)
 
-CRGPorEstados <- select(CRGPorEstados,
+CRGPorEstadosSuma <- select(CRGPorEstadosSuma,
                          "Efector" = efector,
                          "Prestacion" = practica,
                          "NroCrg" = nrocrg,
@@ -106,22 +107,76 @@ CRGPorEstados <- select(CRGPorEstados,
                          "numero de dph" = numerodph,
                          "Fecha Emision CRG" = emisioncrg,
                          "EstadoCrg" = crgidestado,
-                         "Importe" = importecrg)
+                         "Importe" = importecrg,
+                         "Id_Test" = id_test,
+                         "Id_Detalle" = id_detalle)
 
 
 
-CRGPorEstados <- left_join(CRGPorEstados,PrestacionesNosumar,by = c("Prestacion" = "Prestacion"))
+CRGPorEstadosSuma <- left_join(CRGPorEstadosSuma,PrestacionesNosumar,by = c("Prestacion" = "Prestacion"))
 
-CRGPorEstados$Sumar[is.na(CRGPorEstados$Sumar)] <- TRUE
-
-# Cierra todo
-lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
-
-rm(archivo_parametros,con,drv)
+CRGPorEstadosSuma$Sumar[is.na(CRGPorEstadosSuma$Sumar)] <- TRUE
 
 EstadosCrgs <- read.xlsx(paste(workdirectory,"Estados CRGs.xlsx",sep = separador))
 
 print(prestaciones)
+
+QueryDetalleCrg <- glue("SELECT det.pprid,
+                          pp.pprnombre as efector,
+                          det.crgnum as Nrocrg,
+                          det.crgdetnumerocph,
+                          det.crgdetpractica as practica,
+                          det.crgdetid as idpractica,
+                          det.crgdetimportecrg as importecrg,
+                          det.crgdetfechaprestacion as fechaprestacion,
+                          det.crgdetnumerocph as numerodph,
+                          crg.crgfchemision as emisioncrg,
+                          crg.crgestado as crgidestado,
+					                aux2.id_detalle
+					  
+                          FROM crgdet det
+                          
+                          LEFT JOIN crg
+                          ON det.crgnum = crg.crgnum and crg.pprid = det.pprid
+                          
+                          LEFT JOIN 
+                          proveedorprestador pp ON pp.pprid = det.pprid
+                      
+                          LEFT JOIN(SELECT DISTINCT 
+                                      pprid,
+                                      crgnum,
+                                      CONCAT(pprid ,'-', crgnum) as id_detalle                        
+                                      FROM crgdet det WHERE crgdetpractica IN ({prestaciones})) as aux2
+                      
+                         ON CONCAT(det.pprid ,'-', det.crgnum) = aux2.id_detalle
+					  
+					               WHERE aux2.id_detalle IS NOT NULL")
+
+CRGDetalle <- dbGetQuery(con,QueryDetalleCrg)
+
+CRGDetalle$practica <- gsub(" ","",CRGDetalle$practica)
+
+CRGDetalle <- left_join(CRGDetalle,PrestacionesNosumar,by = c("practica" = "Prestacion"))
+
+CRGDetalle$Sumar[is.na(CRGDetalle$Sumar)] <- TRUE
+
+CRGDetalle <- select(CRGDetalle,
+                            "Efector" = efector,
+                            "Prestacion" = practica,
+                            "NroCrg" = nrocrg,
+                            "IDPractica" = idpractica,
+                            "Fecha de Prestacion" = fechaprestacion,
+                            "numero de dph" = numerodph,
+                            "Fecha Emision CRG" = emisioncrg,
+                            "EstadoCrg" = crgidestado,
+                            "Importe" = importecrg,
+                            "Id_Detalle" = id_detalle,
+                            "Sumar" = Sumar)
+
+# Cierra todo
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
+rm(archivo_parametros,con,drv,PrestacionesNosumar,GrupoPrestaciones)
 
 
 #El campo Cantidad hace referencia a la cantidad de prestaciones o practicas del 
