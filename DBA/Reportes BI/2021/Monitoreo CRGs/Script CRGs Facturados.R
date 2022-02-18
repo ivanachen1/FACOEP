@@ -52,15 +52,28 @@ PrestacionesNosumar <- GetFile("PrestacionesNoSumar.xlsx",
 
 #SOLAPA 1 DEL REPORTE
 
+IdentificadorUniverso <- glue("SELECT DISTINCT 
+                                      pprid,
+                                      crgnum,
+                                      crgdetnumerocph
+                                      
+                                      FROM crgdet det WHERE det.crgdetpractica IN ({prestaciones})")
+
+
+
+Universo <- dbGetQuery(con,IdentificadorUniverso)
+Universo$id <- paste(Universo$pprid,Universo$crgnum,Universo$crgdetnumerocph,sep = "-")
 
 QueryCrgsFacturados <- glue("SELECT
                             det.pprid,
                             det.crgnum as Nrocrg,
                             det.crgdetnumerocph,
+                            det.crgdetid as idpractica,
                             aux.factura,
                             aux.efector,
                             aux.crgfchemision,
                             aux.importecrg,
+                            det.crgdetpractica,
                             aux.prestacion
                             
                             FROM crgdet det
@@ -91,9 +104,10 @@ QueryCrgsFacturados <- glue("SELECT
                               proveedorprestador pp ON pp.pprid = cd.comprobantepprid
                             ) as aux
                             
-                            ON det.pprid = aux.comprobantepprid AND det.crgnum = aux.comprobantecrgnro 
+                            ON det.pprid = aux.comprobantepprid AND det.crgnum = aux.comprobantecrgnro
                             
                             WHERE det.crgdetpractica IN ({prestaciones}) AND aux.tipocomprobante IN ({comprobantes}) AND aux.factura IS NOT NULL")
+
 
 
 CRGsFacturados <- dbGetQuery(con,QueryCrgsFacturados)
@@ -105,6 +119,7 @@ CRGsFacturados$prestacion <- gsub(" ","",CRGsFacturados$prestacion)
 CRGsFacturados <- select(CRGsFacturados,
                          "Efector" = efector,
                          "Factura" = factura,
+                         "IdPractica" = idpractica,
                          "Prestacion" = prestacion,
                          "NroCrg" = nrocrg,
                          "Fecha Emision CRG" = crgfchemision,

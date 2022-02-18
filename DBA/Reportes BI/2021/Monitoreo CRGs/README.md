@@ -1,8 +1,8 @@
-*Manual Tecnico Reporte
+#Manual Tecnico Reporte
 
-** Scripts Componen
+## Scripts Componen
 
-*** Script CRGs Facturados
+### Script CRGs Facturados
 
 Este Script crea el DataFrame utilizado en la solapa de CRGs Facturados del Reporte. El mismo contiene una consulta SQL
 que tiene un SubSelect para obtener todos los CRGs - Efectores - Numeros DPH que contienen al menos un código de 

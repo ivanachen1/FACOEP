@@ -43,56 +43,55 @@ PrestacionesNosumar <- GetFile("PrestacionesNoSumar.xlsx",
                                path_one = path_one,
                                path_two = path_two)
 
+
+
+IdentificadorUniverso <- glue("SELECT DISTINCT 
+                                      pprid,
+                                      crgnum,
+                                      crgdetnumerocph,
+                                      CONCAT(pprid ,'-', crgnum,'-',crgdetnumerocph) as id
+                                      
+                                      FROM crgdet det WHERE det.crgdetpractica IN ({prestaciones})")
+
+
+
+Universo <- dbGetQuery(con,IdentificadorUniverso)
+
+
+
 #SOLAPA 2 DEL REPORTE
 
 
-QueryCrgs <- glue("SELECT
-                      det.pprid,
-                      det.crgnum as Nrocrg,
-					            aux.emisioncrg,
-                      aux.CrgIdEstado,
-                      aux.Practica,
-                      pp.pprid,
-                      aux.idpractica,
-                      aux.importecrg,
-                      aux.fechaprestacion,
-                      aux.numerodph,
-                      aux.Efector
-              
-              
-                      FROM crgdet det
-              
-                      LEFT JOIN 
-                      proveedorprestador pp ON pp.pprid = det.pprid
-          
+QueryCrgs <- glue("SELECT det.pprid,
+                          det.crgnum as Nrocrg,
+                          det.crgdetnumerocph,
+                          det.crgdetpractica,
+                          det.crgdetid,
+                          det.crgdetimportecrg,
+                          det.crgdetfechaprestacion,
+                          det.crgdetnumerocph,
+                          crg.crgfchemision,
+					                aux2.idtest
+					  
+                          FROM crgdet det
+                          
+                          LEFT JOIN crg
+                          ON det.crgnum = crg.crgnum and crg.pprid = det.pprid
                       
-                      LEFT JOIN (
+                          LEFT JOIN(SELECT DISTINCT 
+                                      pprid,
+                                      crgnum,
+                                      crgdetnumerocph,
+                                      CONCAT(pprid ,'-', crgnum,'-',crgdetnumerocph) as idtest                        
+                                      FROM crgdet det WHERE crgdetpractica IN ({prestaciones})) as aux2
                       
-                      SELECT dets.crgnum as NroCrg,
-                  cd.crgfchemision as emisioncrg,
-                  crgestado as CrgIdEstado,
-                  dets.crgdetpractica as Practica,
-                  pp.pprid,
-                  dets.crgdetid as idpractica,
-                  dets.crgdetimportecrg as importecrg,
-                  dets.crgdetfechaprestacion as fechaprestacion,
-                  dets.crgdetnumerocph as numerodph,
-                  pprnombre as Efector 
-             
-                  FROM crg cd
-             
-                  LEFT JOIN proveedorprestador pp ON pp.pprid = cd.pprid
-             
-                  LEFT JOIN crgdet dets ON cd.crgnum = dets.crgnum 
-                                       and cd.pprid = dets.pprid
-                      ) as aux
-                      
-                  ON det.pprid = aux.pprid AND det.crgnum = aux.nrocrg AND det.crgdetnumerocph = aux.numerodph
-				  
-				  WHERE det.crgdetpractica IN ({prestaciones}) AND aux.CrgIdEstado <> 4")
+                         ON CONCAT(det.pprid ,'-', det.crgnum,'-',det.crgdetnumerocph) = aux2.idtest
+					  
+					               WHERE aux2.idtest IS NOT NULL")
 
 
 CRGPorEstados <- dbGetQuery(con,QueryCrgs)
+
 
 CRGPorEstados$practica <- gsub(" ","",CRGPorEstados$practica)
 
