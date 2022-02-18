@@ -53,7 +53,8 @@ QueryTablaUsuario <- "SELECT bs.bionombre as NombrePersona,
                              bs.usuid as IDUSUARIO,
                              tu.usunom as NombreUsuario,
                              tu.sectorid as IdSector,
-                             st.sectornombre
+                             st.sectornombre,
+                             tu.usufechaegreso as egreso
                              
                              FROM biousuario bs
                              

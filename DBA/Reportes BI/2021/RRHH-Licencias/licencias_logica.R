@@ -81,6 +81,7 @@ ChangeLicenciasFieldsNames <- function(TablaLicencias){
                            "Tipo de Licencia" = tipolicencia,
                            "Usuario" = idusuario,
                            "Persona" = nombreusuario,
-                           "Nombre Sector" = sectornombre)
+                           "Nombre Sector" = sectornombre,
+                           "Fecha Egreso" = egreso)
   return(TablaLicencias)
 }
