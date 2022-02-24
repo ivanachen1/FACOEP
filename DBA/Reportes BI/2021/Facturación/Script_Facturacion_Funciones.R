@@ -12,6 +12,7 @@ library(lubridate)
 library("RPostgreSQL")
 library(BBmisc)
 library(glue)
+library(readxl)
 
 
 
@@ -86,5 +87,20 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
   return(tabla_comprobantes)
 }
 
-                      
+ReadSigehosData <- function(workdirectory_one,workdirectory_two,sheet){
+  intento <- try(setwd(workdirectory_one),silent = TRUE)
+  if (class(intento) == "try-error"){
+    intento <- workdirectory_two} else {intento <- workdirectory_two}
+  
+  file_list <- list.files(path=intento)
+  
+  dataset <- data.frame()
+  
+  for (i in 1:length(file_list)){
+    temp_data <- read.xlsx(xlsxFile = file_list[i],sheet = sheet)
+    temp_data$Source_Name <- sapply(strsplit(gsub(".xlsx", "", file_list[i]), "_"), function(x){x[2]})
+    dataset <- rbind(dataset, temp_data)}
+  
+  return(dataset)
+}                      
   

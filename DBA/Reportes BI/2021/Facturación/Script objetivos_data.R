@@ -41,7 +41,6 @@ tipo_comprobantes <- filter(tipo_comprobantes,SIF2 == TRUE)
 
 comprobantes_query <- GetListaINSQL(tipo_comprobantes)
 
-print(comprobantes_query)
 
 CentrosCostos  <- GetFile("centro_costo_comprobantes.xlsx",
                           path_one = workdirectory_one,
@@ -50,6 +49,10 @@ CentrosCostos  <- GetFile("centro_costo_comprobantes.xlsx",
 CodigosOOSSDesestimar <- GetFile(file_name = "Codigos Obra Social a Desestimar.xlsx",
                                  path_one = workdirectory_one,
                                  path_two = workdirectory_two)
+
+CodigosOOSSDesestimar$Comprobante <- CodigosOOSSDesestimar$Codigos.Obra.Social.a.Desestimar
+
+CodigosOOSSDesestimar<- GetListaINSQL(CodigosOOSSDesestimar)
 
 ComprobantesDesestimar <- GetFile(file_name = "comprobantes a desestimar.xlsx",
                                  path_one = workdirectory_one,
@@ -78,7 +81,7 @@ con <- dbConnect(drv, dbname = "facoep",
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
 
-BrutoQuery <- glue("SELECT pprnombre,
+SIF2Query <- glue("SELECT pprnombre,
                       CASE WHEN (pprnombre LIKE'%CES%') THEN 'CESAC' WHEN (pprnombre LIKE'%CEM%') THEN 'CESAC' ELSE pprnombre END AS pprnombre2,
                       obsocialessigla as os,
                       c.tipocomprobantecodigo,
@@ -101,25 +104,35 @@ BrutoQuery <- glue("SELECT pprnombre,
                       LEFT JOIN obrassociales os ON os.obsocialescodigo = crg.comprobantecrgos
                       LEFT JOIN proveedorprestador pp on pp.pprid = crg.comprobantepprid
                                   
-                      WHERE c.comprobantetipoentidad = 2 and comprobantepprid > 0 and c.tipocomprobantecodigo IN({comprobantes_query}) AND c.comprobantecodigo NOT IN ({ComprobantesDesestimar})")
+                      WHERE c.comprobantetipoentidad = 2 and comprobantepprid > 0 and c.tipocomprobantecodigo IN({comprobantes_query}) AND c.comprobantecodigo NOT IN ({ComprobantesDesestimar}) AND os.obsocialescodigo NOT IN ({CodigosOOSSDesestimar}) ")
 
 
-Bruto <- dbGetQuery(con,BrutoQuery)
+SIF2 <- dbGetQuery(con,SIF2Query)
 
-Bruto <- CleanTablaComprobantes(Bruto)
+SIF2 <- CleanTablaComprobantes(SIF2)
 
-Bruto$comprobantefechaemision <- as.Date(Bruto$comprobantefechaemision)
+SIF2$comprobantefechaemision <- as.Date(SIF2$comprobantefechaemision)
 
-Bruto <- unique(Bruto)
+SIF2 <- unique(SIF2)
 
-Bruto$AnioEmision <- year(Bruto$comprobantefechaemision)
+SIF2$AnioEmision <- year(SIF2$comprobantefechaemision)
 
-Bruto <- left_join(Bruto,Efectores, by = c("pprnombre" = "sif"))
+SIF2 <- left_join(SIF2,Efectores, by = c("pprnombre" = "sif"))
 
-Bruto <- aggregate(Bruto$comprobantecrgimporteneto,by = list(Bruto$Efector,Bruto$Anio),FUN = sum)
+SIF2 <- aggregate(SIF2$comprobantecrgimporteneto,by = list(SIF2$Efector,SIF2$Anio),FUN = sum)
 
-colnames(Bruto) <- c("Efector","Anio","Total Facturado")
+colnames(SIF2) <- c("Efector","Anio","Total Facturado")
 
-Bruto$Fk <- paste(Bruto$Anio,Bruto$Efector,sep = "-")
+SIF2$Fk <- paste(SIF2$Anio,SIF2$Efector,sep = "-")
+
+
+workdirectory_three <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación/repositorio SIGHEOS"
+
+file_list <- list.files(path=intento)
+
+
+test <- ReadSigehosData(workdirectory_one = workdirectory_three,
+                        workdirectory_two = workdirectory_three,
+                        sheet = "Base")
 
 
