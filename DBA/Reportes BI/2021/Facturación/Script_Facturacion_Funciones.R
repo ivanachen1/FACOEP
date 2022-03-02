@@ -13,6 +13,7 @@ library("RPostgreSQL")
 library(BBmisc)
 library(glue)
 library(readxl)
+library(reader)
 
 
 
@@ -87,20 +88,22 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
   return(tabla_comprobantes)
 }
 
-ReadSigehosData <- function(workdirectory_one,workdirectory_two,sheet){
-  intento <- try(setwd(workdirectory_one),silent = TRUE)
-  if (class(intento) == "try-error"){
-    intento <- workdirectory_two} else {intento <- workdirectory_two}
+ReadSigehosData <- function(workdirectory,sheet){
   
-  file_list <- list.files(path=intento)
+  file_list <- list.files(path=workdirectory)
   
   dataset <- data.frame()
-  
+
   for (i in 1:length(file_list)){
+    
+    avoid_file <- get.ext("temp.xlsx")
+    
+    if(get.ext(file_list[i]) == avoid_file){
     temp_data <- read.xlsx(xlsxFile = file_list[i],sheet = sheet)
     temp_data$Source_Name <- sapply(strsplit(gsub(".xlsx", "", file_list[i]), "_"), function(x){x[2]})
     dataset <- rbind(dataset, temp_data)}
+    if (get.ext(file_list[i]) != avoid_file) next}
   
-  return(dataset)
-}                      
+  dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
+  return(dataset)}                      
   

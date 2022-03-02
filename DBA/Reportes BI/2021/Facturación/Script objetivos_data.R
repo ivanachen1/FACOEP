@@ -1,6 +1,7 @@
 workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
 Archivo <-"Script_Facturacion_Funciones.R"
+library(reader)
 #source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
 
 
@@ -63,6 +64,10 @@ ComprobantesDesestimar$Comprobante <- ComprobantesDesestimar$Listado.Comprobante
 
 ComprobantesDesestimar<- GetListaINSQL(ComprobantesDesestimar)
 
+ObjetivosData <- GetFile(file_name = "Objetivos.xlsx",
+                                  path_one = workdirectory_one,
+                                  path_two = workdirectory_two)
+
 
 pw <- GetPassword()
 
@@ -121,18 +126,52 @@ SIF2 <- left_join(SIF2,Efectores, by = c("pprnombre" = "sif"))
 
 SIF2 <- aggregate(SIF2$comprobantecrgimporteneto,by = list(SIF2$Efector,SIF2$Anio),FUN = sum)
 
-colnames(SIF2) <- c("Efector","Anio","Total Facturado")
+colnames(SIF2) <- c("Efector","Anio","Total.Facturado")
 
 SIF2$Fk <- paste(SIF2$Anio,SIF2$Efector,sep = "-")
 
 
 workdirectory_three <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación/repositorio SIGHEOS"
 
-file_list <- list.files(path=intento)
 
-
-test <- ReadSigehosData(workdirectory_one = workdirectory_three,
-                        workdirectory_two = workdirectory_three,
+Sigehos <- ReadSigehosData(workdirectory = workdirectory_three,
                         sheet = "Base")
 
+Sigehos <- unique(Sigehos)
 
+Sigehos$Anio <- year(Sigehos$Fecha)
+
+Sigehos <- aggregate(Sigehos$Importe.Total,by = list(Sigehos$Anio,Sigehos$Efector),FUN = sum)
+  
+
+colnames(Sigehos) <- c("Año","Efector","emitidoSIGEHOS")
+
+Sigehos$fk <- paste(Sigehos$Año,Sigehos$Efector,sep = "-")
+
+ObjetivosData$fk <- paste(ObjetivosData$Año,ObjetivosData$Efector,sep = "-")
+
+ObjetivosData <- left_join(ObjetivosData,SIF2,by = c("fk"="Fk"))
+
+ObjetivosData <- select(ObjetivosData,
+                        "Efector" = Efector.x,
+                        "Objetivo.Anual.Total" = Objetivo.Anual.Total,
+                        "Objetivo.Mensual.OOSS" = Objetivo.Mensual.OOSS,
+                        "Objetivo.Anual.PAMI"= Objetivo.Anual.PAMI,
+                        "Año" = Año,
+                        "SIF.Total.Facturado" = Total.Facturado,
+                        "fk" = fk)
+
+ObjetivosData <- left_join(ObjetivosData,Sigehos,by = c("fk" = "fk"))
+
+colnames(ObjetivosData)
+
+ObjetivosData <- select(ObjetivosData,
+                        "Efector" = Efector.x,
+                        "Objetivo.Anual.Total" = Objetivo.Anual.Total,
+                        "Objetivo.Mensual.OOSS" = Objetivo.Mensual.OOSS,
+                        "Objetivo.Anual.PAMI"= Objetivo.Anual.PAMI,
+                        "Año" = Año.x,
+                        "SIF.Total.Facturado" = SIF.Total.Facturado,
+                        "Total.Facturado.SIGEHOS" = emitidoSIGEHOS)
+
+ObjetivosData$SIF.Total.Facturado <- replace()
