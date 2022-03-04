@@ -30,26 +30,25 @@ drv <- dbDriver("PostgreSQL")
 user <- GetUser()
 
 host <- GetHost()
-conn <- dbConnect(drv, dbname = "facoep", 
+
+con <- dbConnect(drv, dbname = "facoep", 
                  host = host,
                  port = 5432,
                  user = user,
                  password = pw)
 
 
-postgresqlpqExec(conn, "SET client_encoding = 'windows-1252'")
-
 SelectQuery <- paste("SELECT",
                  "comprobantefechaemision,",
-                 "CAST(nota.tipocomprobantecodigo AS TEXT) || ' - ' || CAST(nota.comprobantecodigo AS TEXT) as nota,",
-                 "CAST(nota.comprobanteentidadcodigo AS TEXT) || ' - ' || CAST(os.obsocialessigla AS TEXT) as OS,",
+                 "CONCAT(nota.tipocomprobantecodigo,'-',nota.comprobanteprefijo,'-',nota.comprobantecodigo) AS notadb,",
+                 "CONCAT(nota.comprobanteentidadcodigo,'-',os.obsocialessigla) AS OOSS,",
                  "hosp.pprnombre as Efector,",
                  "crgs.comprobantecrgnro as CRG,",
                  "mot.motivodebitodescripcion as TipoDebito,",
                  "cat.motivodebitocategorianombre as Categoria,",
                  "dets.comprobantecrgdetmotivodescrip as Observaciones,",
-                 "ComprobanteCRGDetImporteDebita as Rechazado,",
-                 "ComprobanteCRGDetImporteAcredi as Aceptado,",
+                 "dets.ComprobanteCRGDetImporteDebita as Rechazado,",
+                 "dets.ComprobanteCRGDetImporteAcredi as Aceptado,",
                  "dets.comprobantecrgdetpractica as codigo",
                  "FROM COMPROBANTES nota",
                  "LEFT JOIN COMPROBANTECRG crgs ON crgs.empcod = nota.empcod AND", 
@@ -70,15 +69,25 @@ SelectQuery <- paste("SELECT",
                  "dets.comprobantecrgnro = crgs.comprobantecrgnro",
                  "LEFT JOIN proveedorprestador hosp ON hosp.pprid = dets.comprobantepprid",
                  "LEFT JOIN motivodebito mot ON mot.motivodebitoid = dets.comprobantecrgdetmotivodebcred",
-                 "LEFT JOIN motivodebitocategoria cat ON cat.motivodebitoid = dets.comprobantecrgdetmotivodebcred AND",
-                 "cat.motivodebitocategoriaid = dets.comprobantecrgdetmotdebcredcat",
+                 "LEFT JOIN motivodebitocategoria cat ON cat.motivodebitoid = dets.comprobantecrgdetmotivodebcred AND cat.motivodebitocategoriaid = dets.comprobantecrgdetmotdebcredcat",
                  "LEFT JOIN obrassociales os ON os.obsocialesclienteid = nota.comprobanteentidadcodigo",
-                 "WHERE nota.comprobantefechaemision BETWEEN '2021-12-01' AND '2021-12-31' AND nota.tipocomprobantecodigo IN ('NOTADB')")
-
-print(SelectQuery)
+                 "WHERE nota.tipocomprobantecodigo IN ('NOTADB')")
 
 
-dbGetQuery(conn,SelectQuery)
+MotivosDebitos <- dbGetQuery(con,SelectQuery)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
+MotivosDebitos <- select(MotivosDebitos,
+                         "Fecha Emision Comprobante"= comprobantefechaemision,
+                         "NOTADB" = notadb,
+                         "OOSS" = ooss,
+                         "Efector" = efector,
+                         "NroCRG" = crg,
+                         "Tipo Debito"= tipodebito,
+                         "Categoria"= categoria,
+                         "Observaciones" = observaciones,
+                         "Rechazado" = rechazado,
+                         "Aceptado" = aceptado,
+                         "Prestacion" = codigo)
 
