@@ -1,7 +1,7 @@
-workdirectory_one <- "C:/Users/iachenbach/Desktop/FACOEP/DBA/Reportes BI/2021/Efectores"
+workdirectory_one <- "C:/Users/User/Desktop/FACOEP/DBA/Reportes BI/2021/Efectores"
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranzas/Versión 7"
 
-source("C:/Users/iachenbach/Desktop/FACOEP/DBA/Reportes BI/2021/Efectores/Script_Efectores_Funciones.r")
+source("C:/Users/User/Desktop/FACOEP/DBA/Reportes BI/2021/Efectores/Script_Efectores_Funciones.r")
 
 
 

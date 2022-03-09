@@ -91,3 +91,4 @@ MotivosDebitos <- select(MotivosDebitos,
                          "Aceptado" = aceptado,
                          "Prestacion" = codigo)
 
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
