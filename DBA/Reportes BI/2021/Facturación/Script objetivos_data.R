@@ -133,7 +133,6 @@ SIF2$Fk <- paste(SIF2$Anio,SIF2$Efector,sep = "-")
 
 workdirectory_three <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación/repositorio SIGHEOS"
 
-
 Sigehos <- ReadSigehosData(workdirectory = workdirectory_three,
                         sheet = "Base")
 
@@ -163,7 +162,6 @@ ObjetivosData <- select(ObjetivosData,
 
 ObjetivosData <- left_join(ObjetivosData,Sigehos,by = c("fk" = "fk"))
 
-colnames(ObjetivosData)
 
 ObjetivosData <- select(ObjetivosData,
                         "Efector" = Efector.x,
@@ -174,4 +172,12 @@ ObjetivosData <- select(ObjetivosData,
                         "SIF.Total.Facturado" = SIF.Total.Facturado,
                         "Total.Facturado.SIGEHOS" = emitidoSIGEHOS)
 
-ObjetivosData$SIF.Total.Facturado <- replace()
+ObjetivosData$SIF.Total.Facturado[is.na(ObjetivosData$SIF.Total.Facturado)]<-0
+
+ObjetivosData$Total.Facturado.SIGEHOS[is.na(ObjetivosData$Total.Facturado.SIGEHOS)]<-0
+
+
+
+rm(CentrosCostos,Efectores,SIF2,Sigehos,temp_data,tipo_comprobantes,archivo_parametros,con,drv)
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+

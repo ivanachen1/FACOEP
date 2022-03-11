@@ -107,3 +107,5 @@ comprobantes <- select(comprobantes,
                        "Dia" = dia,
                        "Nombre del Mes" = NombreMes,
                        "NroComprobante" = NroComprobante)
+
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})

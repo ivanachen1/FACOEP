@@ -14,6 +14,7 @@ library(BBmisc)
 library(glue)
 library(readxl)
 library(reader)
+library(stringr)
 
 
 
@@ -89,21 +90,22 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
 }
 
 ReadSigehosData <- function(workdirectory,sheet){
-  
-  file_list <- list.files(path=workdirectory)
-  
-  dataset <- data.frame()
 
+  file_list <- list.files(path=workdirectory)
+  dataset <- data.frame()
+  print(file_list)
+  
+  correct_format <- ".xlsx"
+  
   for (i in 1:length(file_list)){
     
-    avoid_file <- get.ext("temp.xlsx")
+    correct_format <- ".xlsx" 
     
-    if(get.ext(file_list[i]) == avoid_file){
-    temp_data <- read.xlsx(xlsxFile = file_list[i],sheet = sheet)
-    temp_data$Source_Name <- sapply(strsplit(gsub(".xlsx", "", file_list[i]), "_"), function(x){x[2]})
-    dataset <- rbind(dataset, temp_data)}
-    if (get.ext(file_list[i]) != avoid_file) next}
+    if(str_detect(file_list[i],correct_format) == TRUE){
+      temp_data <- read.xlsx(xlsxFile = paste(workdirectory,file_list[i],sep = "/"),sheet = sheet)
+      dataset <- rbind(dataset, temp_data)}}
   
   dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
+  
   return(dataset)}                      
   
