@@ -101,16 +101,6 @@ DetallesPAMICapita <- GetFile("Detalles PAMI Cápita.xlsx",
 
 DetallesPAMICapita$Emision <- as.Date(DetallesPAMICapita$Emision,origin = "1899-12-30")
 
-
-
-
-
-
-
-
-
-
-
-
-
 rm(CentrosCostos,con,drv,tipo_comprobantes,archivo_parametros)
+
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})

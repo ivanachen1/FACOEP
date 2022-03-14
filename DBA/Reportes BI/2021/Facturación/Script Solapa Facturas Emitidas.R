@@ -68,7 +68,7 @@ comprobantes <- glue("SELECT comprobanteccosto,
   FROM comprobantes c
    LEFT JOIN clientes os ON os.clienteid = c.comprobanteentidadcodigo
                                   
-  WHERE c.comprobantetipoentidad = 2 and c.tipocomprobantecodigo IN ({comprobantes_query})")
+  WHERE c.comprobantetipoentidad = 2 and c.tipocomprobantecodigo IN ({comprobantes_query}) AND c.comprobantefechaemision > '01-01-2017'")
 
 
 comprobantes <- dbGetQuery(con,comprobantes) 
