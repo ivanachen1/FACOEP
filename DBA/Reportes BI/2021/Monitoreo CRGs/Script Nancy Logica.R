@@ -35,6 +35,13 @@ GetPassword <- function(x = archivo_parametros){
   return(pw)
 }
 
+GetDatabase <- function(x = archivo_parametros){
+  pw <- filter(archivo_parametros,Parametros.servidor == "database")
+  pw <- filter(pw,Usar == TRUE)
+  pw <- pw$Valor
+  return(pw)
+}
+
 GetUser <- function(x = archivo_parametros){
   user <- filter(archivo_parametros,Parametros.servidor == "user")
   user <- filter(user,Usar == TRUE)
