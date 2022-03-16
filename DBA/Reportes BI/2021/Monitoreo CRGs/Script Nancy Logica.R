@@ -18,6 +18,12 @@ drv <- dbDriver("PostgreSQL")
 alafecha <- as.Date(Sys.Date())
 realizacion <- date(alafecha)
 
+SetWorkDirectory<- function(path_one,path_two){
+  intento <- is.error(try(setwd(path_two),silent = F,outFile = "Error"))
+  if(intento == TRUE){
+    setwd(path_one)} else {setwd(path_two)}
+}
+
 
 GetArchivoParametros <- function(path_one,path_two){
   x = "parametros_servidor.xlsx"

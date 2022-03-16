@@ -1,9 +1,9 @@
-
-source("E:/Personales/Sistemas/Agustin/Reportes BI/2021/MonitoreoCRGs/Script Nancy Logica.R")
+source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Monitoreo CRGs/Script Nancy Logica.R")
 
 path_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Monitoreo CRGs/"
 
 path_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/MonitoreoCRGs"
+
 
 archivo_parametros <- GetArchivoParametros(path_one = path_one,path_two = path_two)
 
@@ -48,6 +48,7 @@ PrestacionesNosumar <- GetFile("PrestacionesNoSumar.xlsx",
 QueryDetalleCrg <- glue("SELECT det.pprid,
                           pp.pprnombre as efector,
                           det.crgnum as Nrocrg,
+                          os.obsocialesdescripcion,
                           det.crgdetnumerocph,
                           det.crgdetpractica as practica,
                           det.crgdetid as idpractica,
@@ -65,6 +66,9 @@ QueryDetalleCrg <- glue("SELECT det.pprid,
                           
                           LEFT JOIN 
                           proveedorprestador pp ON pp.pprid = det.pprid
+                          
+                          LEFT JOIN
+                          obrassociales os ON crg.obsocialescodigo = os.obsocialescodigo
                       
                           LEFT JOIN(SELECT DISTINCT 
                                       pprid,
@@ -88,6 +92,7 @@ CRGDetalle <- select(CRGDetalle,
                      "Efector" = efector,
                      "Prestacion" = practica,
                      "NroCrg" = nrocrg,
+                     "ObraSocial" = obsocialesdescripcion,
                      "IDPractica" = idpractica,
                      "Fecha de Prestacion" = fechaprestacion,
                      "numero de dph" = numerodph,

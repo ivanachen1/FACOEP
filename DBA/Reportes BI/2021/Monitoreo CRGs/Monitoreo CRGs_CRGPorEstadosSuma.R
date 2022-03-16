@@ -46,6 +46,7 @@ QueryCrgsSuma <- glue("SELECT det.pprid,
                           pp.pprnombre as efector,
                           det.crgnum as Nrocrg,
                           det.crgdetnumerocph,
+                          os.obsocialesdescripcion,
                           det.crgdetpractica as practica,
                           det.crgdetid as idpractica,
                           det.crgdetimportecrg as importecrg,
@@ -60,6 +61,9 @@ QueryCrgsSuma <- glue("SELECT det.pprid,
                           
                           LEFT JOIN crg
                           ON det.crgnum = crg.crgnum and crg.pprid = det.pprid
+                          
+                          LEFT JOIN
+                          obrassociales os ON crg.obsocialescodigo = os.obsocialescodigo
                           
                           LEFT JOIN 
                           proveedorprestador pp ON pp.pprid = det.pprid
@@ -89,6 +93,7 @@ CRGPorEstadosSuma <- select(CRGPorEstadosSuma,
                             "Efector" = efector,
                             "Prestacion" = practica,
                             "NroCrg" = nrocrg,
+                            "ObraSocial" = obsocialesdescripcion,
                             "IDPractica" = idpractica,
                             "Fecha de Prestacion" = fechaprestacion,
                             "numero de dph" = numerodph,
