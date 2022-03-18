@@ -2,7 +2,9 @@
 workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica"
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/AuditoriaMedica/V2"
 
-source("C:/Users/iachenbach/Desktop/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica/V2/Script_AuditoriaMedica_Funciones.r")
+source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica/Script_AuditoriaMedica_Funciones.r")
+
+setwd("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica")
 
 
 library(stringi)
@@ -11,6 +13,14 @@ library(stringr)
 archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one, 
                                            path_two = workdirectory_two, 
                                            file = "parametros_servidor.xlsx")
+#today <- "2021-01-01"
+today <- today()
+
+year <- year(today)
+
+
+database <- GetDatabase()
+  
 pw <- GetPassword()
 
 user <- GetUser()
@@ -19,9 +29,12 @@ host <- GetHost()
 
 drv <- dbDriver("PostgreSQL")
 
-con <- dbConnect(drv, dbname = "facoep",
-                 host = host, port = 5432, 
-                 user = user, password = pw)
+con <- dbConnect(drv, 
+                 dbname = database,
+                 host = host, 
+                 port = 5432, 
+                 user = user, 
+                 password = pw)
 
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
@@ -52,7 +65,7 @@ CONSULTA <- glue("SELECT crgfchemision,
                         
                         FROM crg c
                         LEFT JOIN crgdet cd ON c.crgnum = cd.crgnum and c.pprid = cd.pprid
-                        WHERE crgestado > 1")
+                        WHERE crgestado > 1 AND crgfchemision BETWEEN '{year}-01-01' AND '{year}-12-31' ")
 
 
 CONSULTA <- dbGetQuery(con,CONSULTA)
@@ -68,7 +81,7 @@ CONSULTA$TipoAuditoria <- ifelse(CONSULTA$verificador == "Verdadero",
                             "Auditado")
 
 base <- select(CONSULTA, "Fecha" = auditoria, 
-               "TipoAuditoria" = Auditado, 
+               "TipoAuditoria" = TipoAuditoria, 
                "CRG" = crgnum, 
                "DPH" = crgdetnumerocph, 
                "Agrega" = crgdetmotivodebcred, 
@@ -100,3 +113,7 @@ agregado$TipoImporte <- "Agregado"
 
 final <- rbind(original, agregado)
 final$id <- paste(final$Fecha,final$TipoAuditoria,final$CRG)
+
+nombre_archivo <- glue("AuditoriaImportes_{year}.csv")
+
+write.csv(final,nombre_archivo)
