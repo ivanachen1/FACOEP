@@ -13,8 +13,8 @@ library(stringr)
 archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one, 
                                            path_two = workdirectory_two, 
                                            file = "parametros_servidor.xlsx")
-#today <- "2021-01-01"
-today <- today()
+today <- "2021-01-01"
+#today <- today()
 
 year <- year(today)
 
@@ -49,6 +49,7 @@ medicos <- toString(sprintf("'%s'", medicos))
 
 ######################################### QUERY ###################################################################
 
+
 CONSULTA <- glue("SELECT crgfchemision,
                          crgauditoriamedicafecha,
                          crgdetfechaalta,
@@ -61,17 +62,21 @@ CONSULTA <- glue("SELECT crgfchemision,
                          crgimpbruto,
                          crgdetimportefacturar,
                          CASE WHEN crgauditoriamedicausuario IN ({medicos}) THEN 'Verdadero' ELSE 'Falso' END AS verificador,
-                        (SELECT MAX(crghistorialfecha) FROM crghistorial WHERE crghistorial.crgnum = c.crgnum AND crghistorial.pprid = c.pprid AND crghistorialestado = 3 AND crghistorialcod >= 2) AS auditoria
+                         auditado.crghistorialfecha as auditado
+                         
                         
                         FROM crg c
+                        LEFT JOIN (SELECT MAX(crghistorialfecha) as crghistorialfecha,crgnum,pprid 
+								                            FROM crghistorial
+                                            WHERE crghistorialfecha IS NOT NULL AND crghistorialestado = 3 AND crghistorialcod >= 2
+                                            GROUP BY crgnum,pprid) as auditado
+                                            ON auditado.crgnum = c.crgnum AND auditado.pprid = c.pprid
+                                            
                         LEFT JOIN crgdet cd ON c.crgnum = cd.crgnum and c.pprid = cd.pprid
-                        WHERE crgestado > 1 AND crgfchemision BETWEEN '{year}-01-01' AND '{year}-12-31' ")
+                        WHERE crgestado > 1 AND auditado.crghistorialfecha IS NOT NULL AND crgfchemision BETWEEN '{year}-01-01' AND '{year}-12-31'")
 
-
+print(CONSULTA)
 CONSULTA <- dbGetQuery(con,CONSULTA)
-
-
-CONSULTA <- filter(CONSULTA, !is.na(auditoria))
 
 CONSULTA$auditado <- str_replace_all(CONSULTA$auditado, fixed(" "), "")
 
