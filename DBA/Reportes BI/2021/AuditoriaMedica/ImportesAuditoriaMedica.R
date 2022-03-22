@@ -36,8 +36,6 @@ con <- dbConnect(drv,
                  user = user, 
                  password = pw)
 
-postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
-
 medicos <- GetFile("medicos.xlsx",
                    path_one = workdirectory_one,
                    path_two = workdirectory_two)
@@ -62,18 +60,18 @@ CONSULTA <- glue("SELECT crgfchemision,
                          crgimpbruto,
                          crgdetimportefacturar,
                          CASE WHEN crgauditoriamedicausuario IN ({medicos}) THEN 'Verdadero' ELSE 'Falso' END AS verificador,
-                         auditado.crghistorialfecha as auditado
+                         auditado.crghistorialfecha as auditoria
                          
                         
                         FROM crg c
                         LEFT JOIN (SELECT MAX(crghistorialfecha) as crghistorialfecha,crgnum,pprid 
 								                            FROM crghistorial
-                                            WHERE crghistorialfecha IS NOT NULL AND crghistorialestado = 3 AND crghistorialcod >= 2
+                                            WHERE crghistorialfecha IS NOT NULL AND crghistorialfecha > '2021-01-01' AND crghistorialestado = 3 AND crghistorialcod >= 2
                                             GROUP BY crgnum,pprid) as auditado
                                             ON auditado.crgnum = c.crgnum AND auditado.pprid = c.pprid
                                             
                         LEFT JOIN crgdet cd ON c.crgnum = cd.crgnum and c.pprid = cd.pprid
-                        WHERE crgestado > 1 AND auditado.crghistorialfecha IS NOT NULL AND crgfchemision BETWEEN '{year}-01-01' AND '{year}-12-31'")
+                        WHERE crgestado > 1 AND auditado.crghistorialfecha IS NOT NULL")
 
 print(CONSULTA)
 CONSULTA <- dbGetQuery(con,CONSULTA)
@@ -120,5 +118,7 @@ final <- rbind(original, agregado)
 final$id <- paste(final$Fecha,final$TipoAuditoria,final$CRG)
 
 nombre_archivo <- glue("AuditoriaImportes_{year}.csv")
+
+setwd("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/AuditoriaMedica/Repositorio Auditoria Medica")
 
 write.csv(final,nombre_archivo)
