@@ -9,20 +9,17 @@ library(stringr)
 library(plyr)
 library(zoo)
 library("RPostgreSQL")
-pw <- {"facoep2017"} 
+pw <- {"odoo"} 
 drv <- dbDriver("PostgreSQL")
 con <- dbConnect(drv, dbname = "facoep",
-                 host = "172.31.24.12", port = 5432, 
-                 user = "postgres", password = pw)
+                 host = "localhost", port = 5432, 
+                 user = "odoo", password = pw)
 rm(pw)
-meses <- c("01 - Enero","02 - Febrero","03 - Marzo",
-           "04 - Abril","05 - Mayo","06 - Junio",
-           "07 - Julio","08 - Agosto","09 - Septiembre",
-           "10 - Octubre","11 - Noviembre","12 - Diciembre")
+
 alafecha <- as.Date(Sys.Date())
 realizacion <- Sys.time()
-Resultados <- "C:/Users/iachenbach/Desktop/FACOEP/DBA/Scripts R"
-setwd(Resultados)
+#Resultados <- "C:/Users/iachenbach/Desktop/FACOEP/DBA/Scripts R"
+#setwd(Resultados)
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
 
@@ -33,7 +30,7 @@ FacturadoCobrado <- dbGetQuery(con, "SELECT
                                       comprobantecrgdetpractica as Prestacion,
                                       comprobantecrgdetimportecrg as importecrg,
                                       comprobantecrgdetimportefactur as importepostrec,
-                                      asoc.comprobantefechaemision as emisionrecibo,
+                                      a.comprobantefechaemision as emisionrecibo,
                                       a.comprobanteasoctipo as tiporec, a.comprobanteasoccodigo as recibo,
                                       CASE WHEN (c.comprobantedetalle LIKE '%ANULA%') THEN 'Si' ELSE 'No' END AS anulado
   
@@ -53,25 +50,42 @@ FacturadoCobrado <- dbGetQuery(con, "SELECT
                                     LEFT JOIN 
                                       obrassociales os ON os.obsocialesclienteid = c.comprobanteentidadcodigo
                                     
-                                    LEFT JOIN 
-                                      comprobantesasociados a ON a.empcod = c.empcod and
-                                                                 a.sucursalcodigo = c.sucursalcodigo and
-                                                                 a.comprobantetipoentidad = c.comprobantetipoentidad and
-                                                                 a.comprobanteentidadcodigo = c.comprobanteentidadcodigo and
-                                                                 a.tipocomprobantecodigo = c.tipocomprobantecodigo and
-                                                                 a.comprobanteprefijo = c.comprobanteprefijo and
-                                                                 a.comprobantecodigo = c.comprobantecodigo
+                                    LEFT JOIN (SELECT asoc.tipocomprobantecodigo,
+                                                      asoc.comprobanteprefijo,
+                                                      asoc.comprobantecodigo,
+                                                      asoc.comprobanteasoctipo,
+                                                      asoc.comprobanteasocprefijo,
+                                                      asoc.comprobanteasoccodigo,
+                                                      aux.comprobantefechaemision
+                                                      
+                                                      FROM comprobantesasociados asoc
+                                                      
+                                                      
+                                                      
+                                                      LEFT JOIN (SELECT tipocomprobantecodigo,
+                                                                        comprobanteprefijo,
+                                                                        comprobantecodigo,
+                                                                        comprobantefechaemision
+																                                 FROM comprobantes
+                                                                        ) as aux
+                                                      
+                                                      ON aux.tipocomprobantecodigo = asoc.tipocomprobantecodigo AND
+                                                         aux.comprobanteprefijo = asoc.comprobanteprefijo AND
+                                                         aux.comprobantecodigo = asoc.comprobantecodigo
+											  
+											  		         WHERE asoc.comprobanteasoctipo = 'RECX2') as a
+                              
+                                     ON a.tipocomprobantecodigo = c.tipocomprobantecodigo and
+                                     a.comprobanteprefijo = c.comprobanteprefijo and
+                                     a.comprobantecodigo = c.comprobantecodigo
                                                                          
-                                    LEFT JOIN 
-                                      comprobantes asoc ON asoc.tipocomprobantecodigo = a.comprobanteasoctipo and
-                                                           asoc.comprobantecodigo = a.comprobanteasoccodigo
                                     
-                                    WHERE obsocialescodigo NOT IN ('90001199', '90001003', '90001162', '90000172', '90001226') and 
+                                    WHERE obsocialescodigo NOT IN ('90001199', '90001003', '90001162', '90000172', '90001226') and
                                           c.comprobantetipoentidad = 2 and
                                           c.comprobantefechaemision > '2020-01-01' and
                                           c.tipocomprobantecodigo IN ('FACA2', 'FACB2', 'FAECA', 'FAECB') and
-                                          (a.comprobanteasoctipo IS NULL OR a.comprobanteasoctipo = 'RECX2') and
-                                          comprobantecrgdetpractica  LIKE '60.%' OR comprobantecrgdetpractica LIKE '%COV%' ")
+                                          a.comprobanteasoctipo IS NULL OR a.comprobanteasoctipo = 'RECX2' and
+                                          comprobantecrgdetpractica  LIKE '60.%' OR comprobantecrgdetpractica LIKE '%COV%'")
 
 
 
