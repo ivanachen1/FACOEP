@@ -9,7 +9,9 @@ library(stringr)
 library(plyr)
 library(zoo)
 library(glue)
+library(lubridate)
 library("RPostgreSQL")
+
 pw <- {"odoo"} 
 drv <- dbDriver("PostgreSQL")
 con <- dbConnect(drv, dbname = "facoep",
@@ -66,5 +68,15 @@ FacturadoCobradoQuery <- glue("SELECT pprnombre,
 								          det.comprobantecrgdetpractica IN ({PrestacionesQuery})")
 
 
-FacturacionQuery <- dbGetQuery(conn = con,FacturadoCobradoQuery) 
+FacturacionQuery <- dbGetQuery(conn = con,FacturadoCobradoQuery)
+FacturacionQuery$comprobante <- gsub(" ","",FacturacionQuery$comprobante)
+FacturacionQuery$Cantidad <- 1
+
+FacturacionQuery <- aggregate(.~pprnombre+comprobante+emision+prestacion+anulado, FacturacionQuery, sum)
+
+
+FacturacionQuery$anio <- year(FacturacionQuery$emision)
+FacturacionQuery$Mes <- month(FacturacionQuery$emision)
+FacturacionQuery$NombreMes <- format(FacturacionQuery$emision,"%B")
+
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
