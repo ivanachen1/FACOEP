@@ -23,6 +23,11 @@ con <- dbConnect(drv, dbname = "facoep",
                  host = "localhost", port = 5432, 
                  user = "odoo",password = pw)
 
+pathGrupoPrestaciones <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Cobranza por Prestaciones/Grupo Prestaciones.xlsx"
+
+
+GrupoPrestaciones <- read.xlsx(pathGrupoPrestaciones)
+
 
 #setwd("E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Automatizado/data")
 
@@ -42,7 +47,7 @@ primer_dia_mes <- 1
 query <- glue("SELECT
               pprnombre as Efector,
               CAST(os.clienteid AS TEXT) || ' - ' || CAST(clientenombre AS TEXT) as OS,
-              CAST(c.tipocomprobantecodigo AS TEXT) || ' - ' || CAST(c.comprobantecodigo AS TEXT) as recibo,
+              CONCAT(c.tipocomprobantecodigo,'-',c.comprobanteprefijo,'-',c.comprobantecodigo) as recibo,
               c.comprobantefechaemision as emision,
               cd.comprobantecrgnro,
               comprobantecrgdetpractica as Prestacion,
@@ -71,6 +76,8 @@ query <- glue("SELECT
 
 data <- dbGetQuery(con,query)
 
+data$recibo <- gsub(" ","",data$recibo)
+
 data$PoseeCrg <- ifelse(is.na(data$comprobantecrgnro),"No","Si")
 data$TipoApertura <- ifelse(data$PoseeCrg == "No",
                             "Sin Apertura",
@@ -80,7 +87,13 @@ data$TipoApertura <- ifelse(data$PoseeCrg == "No",
 
 RecibosConSinApertura <- unique(select(data,"Recibo" = recibo,
                                              "TipoApertura" = TipoApertura,
-                                             "EmsionRecibo" = emision))
+                                             "EmsionRecibo" = emision,
+                                             "ObraSocial" = os,
+                                             "Efector" = efector))
+
+RecibosConSinApertura$Efector <- ifelse(is.na(RecibosConSinApertura$Efector),"Sin Asignar",RecibosConSinApertura$Efector)
+
+RecibosConSinApertura$ObraSocial <- ifelse(is.na(RecibosConSinApertura$ObraSocial),"Sin Asignar",RecibosConSinApertura$ObraSocial)
 
 ft <- data.frame(table(RecibosConSinApertura$TipoApertura))
 
@@ -104,6 +117,8 @@ data$os <- ifelse(is.na(data$os),"Sin Asignar SIF",data$os)
 
 data <- aggregate(.~efector+os+recibo+emision+comprobantecrgnro+prestacion+importeprestacion+centrocosto+PoseeCrg+TipoApertura,
           data, sum)
+
+CentroCostos <- dbGetQuery(conn = con,"SELECT * FROM centrocostos")
 
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
