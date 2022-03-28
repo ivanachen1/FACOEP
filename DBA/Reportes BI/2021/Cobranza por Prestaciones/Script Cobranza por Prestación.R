@@ -69,7 +69,6 @@ query <- glue("SELECT
               WHERE c.tipocomprobantecodigo IN ('RECX2') and c.comprobantefechaemision > '2017-01-01'")
 
 
-print(query)
 data <- dbGetQuery(con,query)
 
 data$PoseeCrg <- ifelse(is.na(data$comprobantecrgnro),"No","Si")
@@ -86,21 +85,27 @@ RecibosConSinApertura <- unique(select(data,"Recibo" = recibo,
 ft <- data.frame(table(RecibosConSinApertura$TipoApertura))
 
 
-data$cantidad <- ifelse(data$TipoApertura == "Apertura Detalle",1,0)
+data$cantidad <- 1
 
-
-#view(data)
 
 data$emision <- as.Date(data$emision)
 
-max_fecha_emision <- max(data$emision)
-#view(emision)
+data$comprobantecrgnro <- as.character(data$comprobantecrgnro)
 
-#nombre_archivo <- glue("Facturado_{mes_actual}_{anio_actual}.csv")
+data$comprobantecrgnro <- ifelse(is.na(data$comprobantecrgnro),"Sin Asignar SIF",data$comprobantecrgnro)
 
-#write.csv(data,nombre_archivo)
+data$prestacion <- ifelse(is.na(data$prestacion),"Sin Asignar SIF",data$prestacion)
 
-# Cierra todo
+data$importeprestacion <- ifelse(is.na(data$importeprestacion),0,data$importeprestacion)
+
+data$efector <- ifelse(is.na(data$efector),"Sin Asignar SIF",data$efector)
+
+data$os <- ifelse(is.na(data$os),"Sin Asignar SIF",data$os)
+
+data <- aggregate(.~efector+os+recibo+emision+comprobantecrgnro+prestacion+importeprestacion+centrocosto+PoseeCrg+TipoApertura,
+          data, sum)
+
+
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 
 
