@@ -13,11 +13,13 @@ pw <- GetPassword()
 
 user <- GetUser()
 
-host <- GetHost() 
+host <- GetHost()
+
+database <- GetDatabase()
 
 drv <- dbDriver("PostgreSQL")
 
-con <- dbConnect(drv, dbname = "facoep",
+con <- dbConnect(drv, dbname = database,
                  host = host, port = 5432, 
                  user = user, password = pw)
 

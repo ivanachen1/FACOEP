@@ -23,7 +23,14 @@ GetArchivoParametros <- function(path_one,path_two,file){
   
   if(intento == TRUE){
     return(read.xlsx(paste(path_one,file,sep = "/")))} else {return(read.xlsx(paste(path_two,file,sep = "/")))}
-}  
+}
+
+GetDatabase <- function(x = archivo_parametros){
+  pw <- filter(archivo_parametros,Parametros.servidor == "database")
+  pw <- filter(pw,Usar == TRUE)
+  pw <- pw$Valor
+  return(pw)
+}
 
 GetPassword <- function(x = archivo_parametros){
   pw <- filter(archivo_parametros,Parametros.servidor == "password")
