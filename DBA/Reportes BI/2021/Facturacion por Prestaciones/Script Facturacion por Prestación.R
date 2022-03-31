@@ -1,43 +1,33 @@
-############################################ LIBRERIAS ########################################################
-library(data.table)
-library(tidyverse)
-library(stringr)
-library(openxlsx)
-library(scales)
-library(formattable)
-library(stringr)
-library(plyr)
-library(zoo)
-library("RPostgreSQL")
-library(lubridate)
-library(glue)
+source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturacion por Prestaciones")
 
 #pw <- {"odoo"} 
 pw <- {"facoep2017"}
 drv <- dbDriver("PostgreSQL")
-con <- dbConnect(drv, dbname = "facoep",
-                 host = "172.31.24.12", port = 5432, 
-                 user = "postgres", password = pw)
-
 #con <- dbConnect(drv, dbname = "facoep",
-#                 host = "localhost", port = 5432, 
-#                 user = "odoo",password = pw)
+#                 host = "172.31.24.12", port = 5432, 
+#                 user = "postgres", password = pw)
+
+con <- dbConnect(drv, dbname = "facoep",
+                 host = "localhost", port = 5432, 
+                 user = "odoo",password = pw)
 
 
-setwd("E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Automatizado/data")
+#setwd("E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Automatizado/data")
 
 fecha_actual <- today("UTC")
 
 
-#fecha_actual <- as.Date("2021-12-31")
+#fecha_actual <- as.Date("2021-11-15")
 
 #print(fecha_actual)
 dia_actual <- day(fecha_actual)
 mes_actual <- month(fecha_actual)
 anio_actual <- year(fecha_actual)
 
+ultimo_dia_mes <- day(ceiling_date(fecha_actual,"month")-1)
 
-primer_dia_mes <- 1
+VerificadorCambioMes <- if(ultimo_dia_mes == dia_actual ,
+                           mes_anterior = mes_actual -1)
 
 query <- glue("SELECT
               pprnombre as Efector,
