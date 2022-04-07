@@ -12,16 +12,16 @@ library("RPostgreSQL")
 library(lubridate)
 library(glue)
 
-pw <- {"odoo"} 
+pw <- {"serveradmin"} 
 #pw <- {"facoep2017"}
 drv <- dbDriver("PostgreSQL")
 #con <- dbConnect(drv, dbname = "facoep",
 #                 host = "172.31.24.12", port = 5432, 
 #                 user = "postgres", password = pw)
 
-con <- dbConnect(drv, dbname = "facoep",
-                 host = "localhost", port = 5432, 
-                 user = "odoo",password = pw)
+con <- dbConnect(drv, dbname = "Facoep",
+                 host = "10.22.0.142", port = 5432, 
+                 user = "postgres",password = pw)
 
 pathGrupoPrestaciones <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Cobranza por Prestaciones/Grupo Prestaciones.xlsx"
 
@@ -31,18 +31,6 @@ GrupoPrestaciones <- read.xlsx(pathGrupoPrestaciones)
 
 #setwd("E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Automatizado/data")
 
-#fecha_actual <- today("UTC")
-
-
-fecha_actual <- as.Date("2022-02-28")
-
-#print(fecha_actual)
-dia_actual <- day(fecha_actual)
-mes_actual <- month(fecha_actual)
-anio_actual <- year(fecha_actual)
-
-
-primer_dia_mes <- 1
 
 query <- glue("SELECT
               pprnombre as Efector,
@@ -91,7 +79,7 @@ query <- glue("SELECT
               LEFT JOIN 
               proveedorprestador pp ON pp.pprid = cc.comprobantepprid
               
-              WHERE c.tipocomprobantecodigo IN ('RECX2') and c.comprobantefechaemision > '2017-01-01'")
+              WHERE c.tipocomprobantecodigo IN ('RECX2') and c.comprobanteentidadcodigo <> -1 AND c.comprobantefechaemision > '2017-01-01'")
 
 
 data <- dbGetQuery(con,query)
@@ -99,7 +87,7 @@ data <- dbGetQuery(con,query)
 data$recibo <- gsub(" ","",data$recibo)
 
 
-data$TipoApertura <- ifelse(is.na(data$comprobantecrgnrocrg) & is.na(data$comprobantecrgnrocrg),
+data$TipoApertura <- ifelse(is.na(data$comprobantecrgnrocrg) & is.na(data$comprobantecrgdetnrocrg),
                             "Sin Apertura",
                             ifelse(!is.na(data$comprobantecrgnrocrg) & is.na(data$comprobantecrgdetnrocrg),
                                    "Apertura Cabecera",
@@ -108,10 +96,8 @@ data$TipoApertura <- ifelse(is.na(data$comprobantecrgnrocrg) & is.na(data$compro
 RecibosConSinApertura <- unique(select(data,"Recibo" = recibo,
                                              "TipoApertura" = TipoApertura,
                                              "EmsionRecibo" = emision,
-                                             "ObraSocial" = os,
-                                             "Efector" = efector))
+                                             "ObraSocial" = os))
 
-RecibosConSinApertura$Efector <- ifelse(is.na(RecibosConSinApertura$Efector),"Sin Asignar",RecibosConSinApertura$Efector)
 
 RecibosConSinApertura$ObraSocial <- ifelse(is.na(RecibosConSinApertura$ObraSocial),"Sin Asignar",RecibosConSinApertura$ObraSocial)
 
@@ -131,6 +117,7 @@ data$importeprestacion <- ifelse(is.na(data$importeprestacion),0,data$importepre
 data$efector <- ifelse(is.na(data$efector),"Sin Asignar SIF",data$efector)
 
 data$os <- ifelse(is.na(data$os),"Sin Asignar SIF",data$os)
+
 
 data <- aggregate(.~efector+os+recibo+emision+comprobantecrgnro+prestacion+importeprestacion+centrocosto+TipoApertura,
           data, sum)
