@@ -22,6 +22,7 @@ GetParameter <- function(x = archivo_parametros,parameter){
 }
 
 GetQuery <- function(fecha_actual,fecha_anterior){
+  
   dia_actual <- day(fecha_actual)
   mes_actual <- month(fecha_actual)
   anio_actual <- year(fecha_actual)
@@ -51,22 +52,15 @@ GetQuery <- function(fecha_actual,fecha_anterior){
                  "LEFT JOIN", 
                  "proveedorprestador pp ON pp.pprid = cd.comprobantepprid",
                  "WHERE c.tipocomprobantecodigo IN ('FACA2','FACB2', 'FAECA', 'FAECB')", 
-                 "and c.comprobantefechaemision = {anio_actual}-{mes_actual}-{dia_actual}'")
+                 "AND c.comprobantefechaemision BETWEEN '{anio_anterior}-{mes_anterior}-{dia_anterior}' AND",
+                 "'{anio_actual}-{mes_actual}-{dia_actual}'")
+  
   query <- glue(query)
   
-  nombre_archivo <- glue(paste("Facturado_{dia_actual}_{mes_actual}_{anio_actual}.csv"))
+  nombre_archivo <- glue(paste("Facturado_{mes_actual}_{anio_actual}.csv"))
                          
   return(list(query,nombre_archivo))}
 
-CreateFile <- function(query,con){
-  data <- dbGetQuery(con,query)
-  if(nrow(data) == 0){
-    write.csv(data,nombre_archivo)}
-  if(nrow(data)>0){
-    data$cantidad <- 1
-    data$emision <- as.Date(data$emision)
-    write.csv(data,nombre_archivo)}
-  lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
-}
+
 
 # tengo que crear una funcion que me haga una lista de archivos en R y de ahi identificar cuales me faltan generar para el mes anterior.
