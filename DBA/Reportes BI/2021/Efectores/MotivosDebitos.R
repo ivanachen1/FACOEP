@@ -41,8 +41,9 @@ con <- dbConnect(drv, dbname = database,
 
 
 SelectQuery <- paste("SELECT",
-                     "comprobantefechaemision,",
+                     "nota.comprobantefechaemision,",
                      "CONCAT(nota.tipocomprobantecodigo,'-',nota.comprobanteprefijo,'-',nota.comprobantecodigo) AS notadb,",
+                     "CASE WHEN nota.comprobantedetalle LIKE '%por copia de NOTADB por refacturac%' THEN 'SI' ELSE 'NO' END AS refactura,",
                      "CONCAT(nota.comprobanteentidadcodigo,'-',os.obsocialessigla) AS OOSS,",
                      "hosp.pprnombre as Efector,",
                      "crgs.comprobantecrgnro as CRG,",
@@ -73,12 +74,12 @@ SelectQuery <- paste("SELECT",
                      "LEFT JOIN motivodebito mot ON mot.motivodebitoid = dets.comprobantecrgdetmotivodebcred",
                      "LEFT JOIN motivodebitocategoria cat ON cat.motivodebitoid = dets.comprobantecrgdetmotivodebcred AND cat.motivodebitocategoriaid = dets.comprobantecrgdetmotdebcredcat",
                      "LEFT JOIN obrassociales os ON os.obsocialesclienteid = nota.comprobanteentidadcodigo",
-                     "WHERE nota.tipocomprobantecodigo IN ('NOTADB')")
+                     "WHERE nota.tipocomprobantecodigo IN ('NOTADB')",sep = "\n")
 
+#cat(SelectQuery)
 
 MotivosDebitos <- dbGetQuery(con,SelectQuery)
 
-lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 
 MotivosDebitos <- select(MotivosDebitos,
                          "Fecha Emision Comprobante"= comprobantefechaemision,
@@ -91,6 +92,15 @@ MotivosDebitos <- select(MotivosDebitos,
                          "Observaciones" = observaciones,
                          "Rechazado" = rechazado,
                          "Aceptado" = aceptado,
-                         "Prestacion" = codigo)
+                         "Prestacion" = codigo,
+                         "Refactura" = refactura)
+
+#CantRefacturas <- unique(select(MotivosDebitos,"NOTADB" = NOTADB,
+#                                               "Refactura" = Refactura))
+
+#AnalisisRefact <- data.frame(table(Refactura=CantRefacturas$Refactura))
+
+#ImporteRefact <- aggregate(Aceptado+Rechazado ~ Refactura, MotivosDebitos, sum)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
