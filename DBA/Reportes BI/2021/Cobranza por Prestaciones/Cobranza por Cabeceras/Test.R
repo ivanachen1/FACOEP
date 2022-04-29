@@ -174,11 +174,17 @@ TablaFinal <- select(TablaFinal,
 TablaFinal$Factura <- gsub(" ","",TablaFinal$Factura)
 TablaFinal$NotaCredito <- gsub(" ","",TablaFinal$NotaCredito)
 
+TablaFinal$CrgNotacredito <- ifelse(TablaFinal$Saldo == 0,
+                                    TablaFinal$CrgFactura,TablaFinal$CrgNotacredito)
+
 
 TablaFinal$Igualdad <- ifelse(is.na(TablaFinal$NotaCredito),"SinNc",
                               ifelse(TablaFinal$TotalFactura == TablaFinal$TotalNotaCredito,
                                      "Iguales",
                                      "Diferentes"))
+
+TablaFinal$CrgFactura <- as.character(TablaFinal$CrgFactura)
+
 
 
 rm(archivo_parametros,ComprobantesAux,Fc,Nc,tabla_parametros_comprobantes)
