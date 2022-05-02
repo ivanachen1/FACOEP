@@ -54,24 +54,9 @@ GetListaINSQL<- function(archivo,print = FALSE){
   ifelse(print == TRUE,print(archivo),return(archivo))
   
 }
-  
 
-CleanTablaComprobantes <- function(tabla_comprobantes){
-  tabla_comprobantes$tipocomprobantecodigo <- gsub(" ","",tabla_comprobantes$tipocomprobantecodigo)
-  tabla_comprobantes$NroComprobante <- paste(tabla_comprobantes$tipocomprobantecodigo,
-                                             tabla_comprobantes$comprobanteprefijo,
-                                             tabla_comprobantes$comprobantecodigo,sep = "-")
-  
-  tabla_comprobantes$comprobanteprefijo <- NULL
-  tabla_comprobantes$comprobantecodigo <- NULL
-  
-  #tabla_comprobantes<- filter(tabla_comprobantes,os != is.na(os))
-  tabla_comprobantes<- unique(tabla_comprobantes)
-  
-  return(tabla_comprobantes)
-}
-
-QueryNc <- glue(paste("SELECT",
+QueryNc <- function(){
+  Query <- glue(paste("SELECT",
                       "CONCAT(os.clienteid,'-',os.clientenombre) as OS,",
                       "CONCAT(asoc.tipocomprobantecodigo,'-',asoc.comprobanteprefijo,'-',asoc.comprobantecodigo) as Factura,",
                       "CONCAT(asoc.comprobanteimputaciontipo,'-',asoc.comprobanteimputacionprefijo,'-',asoc.comprobanteimputacioncodigo) as notacredito,",
@@ -105,8 +90,10 @@ QueryNc <- glue(paste("SELECT",
                       "c.comprobantefechaemision > '2017-12-31' AND",
                       "asoc.comprobanteimputaciontipo IN ({NotasDebito}) AND",
                       "c.comprobantetipoentidad = 2"),sep = "\n")
+  return(Query)}
 
-QueryFc <- glue(paste("SELECT",
+QueryFc <- function(){
+  Query <- glue(paste("SELECT",
                       "c.comprobanteccosto as CentroCosto,",
                       "c.comprobantesccosto as SubCentroCosto,",
                       "c.comprobantesaldo as saldo,",
@@ -140,4 +127,20 @@ QueryFc <- glue(paste("SELECT",
                       "WHERE c.tipocomprobantecodigo IN ({FacturasQuery}) AND",
                       "c.comprobantefechaemision > '2017-12-31' AND",
                       "c.comprobantetipoentidad = 2"),sep = "\n")
+  return(Query)}
+
+CleanTablaFinal <- function(TablaFinal){
   
+  TablaFinal$Factura <- gsub(" ","",TablaFinal$Factura)
+  TablaFinal$NotaCredito <- gsub(" ","",TablaFinal$NotaCredito)
+  TablaFinal$CrgFactura <- as.character(TablaFinal$CrgFactura)
+  
+  TablaFinal$ClaveSumaFacturasCRG <- paste(TablaFinal$Factura,
+                                           TablaFinal$CrgFactura,
+                                           TablaFinal$PpridFactura,sep = "-")
+  
+  TablaFinal$ClaveUnicaNcRecibos <- paste(TablaFinal$NotaCredito,
+                                          TablaFinal$CrgNotacredito,
+                                          TablaFinal$PpridNotaCredito,sep = "-")
+  return(TablaFinal)
+}  

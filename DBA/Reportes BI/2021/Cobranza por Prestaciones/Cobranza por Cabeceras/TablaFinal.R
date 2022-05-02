@@ -36,9 +36,9 @@ FacturasQuery <- TransformFile(tabla_parametros_comprobantes,FilterOne = "factur
 
 FacturasQuery <- GetListaINSQL(FacturasQuery,print = FALSE)
 
-Nc <- dbGetQuery(conn = con,QueryNc)
+Nc <- dbGetQuery(conn = con,QueryNc())
 
-Fc <- dbGetQuery(conn = con,QueryFc)
+Fc <- dbGetQuery(conn = con,QueryFc())
 
 
 TablaFinal <- left_join(Fc,Nc,by = c('factura'='factura',
@@ -68,11 +68,9 @@ TablaFinal <- select(TablaFinal,
                      "Anulada" = anulada,
                      "Interes" = interes)
 
-TablaFinal$Factura <- gsub(" ","",TablaFinal$Factura)
-TablaFinal$NotaCredito <- gsub(" ","",TablaFinal$NotaCredito)
-TablaFinal$CrgFactura <- as.character(TablaFinal$CrgFactura)
+TablaFinal <- CleanTablaFinal(TablaFinal = TablaFinal)
 
-rm(archivo_parametros,ComprobantesAux,Fc,Nc,tabla_parametros_comprobantes)
+rm(archivo_parametros,Fc,Nc,tabla_parametros_comprobantes)
 
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
