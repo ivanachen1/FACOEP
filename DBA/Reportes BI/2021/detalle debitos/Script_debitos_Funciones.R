@@ -23,25 +23,12 @@ GetArchivoParametros <- function(path_one,path_two,file){
     return(read.xlsx(paste(path_one,file,sep = "/")))} else {return(read.xlsx(paste(path_two,file,sep = "/")))}
 }  
 
-GetPassword <- function(x = archivo_parametros){
-  pw <- filter(archivo_parametros,Parametros.servidor == "password")
+GetParameter <- function(x = archivo_parametros,parameter){
+  pw <- filter(archivo_parametros,Parametros.servidor == parameter)
   pw <- filter(pw,Usar == TRUE)
   pw <- pw$Valor
   return(pw)
 }
-
-GetUser <- function(x = archivo_parametros){
-  user <- filter(archivo_parametros,Parametros.servidor == "user")
-  user <- filter(user,Usar == TRUE)
-  user <- user$Valor
-  return(user)}
-
-GetHost <- function(x = archivo_parametros){
-  host <- filter(archivo_parametros,Parametros.servidor == "host")
-  host <- filter(host,Usar == TRUE)
-  host <- host$Valor
-  return(host)}
-
 
 GetFile <- function(file_name,path_one,path_two){
   intento  <- is.error(try(read.xlsx(paste(path_two,file_name,sep = "/")),silent = F,outFile = "Error"))
@@ -87,23 +74,4 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
   
   return(tabla_comprobantes)
 }
-
-ReadSigehosData <- function(workdirectory,sheet){
-  
-  file_list <- list.files(path=workdirectory)
-  
-  dataset <- data.frame()
-
-  for (i in 1:length(file_list)){
-    
-    avoid_file <- get.ext("temp.xlsx")
-    
-    if(get.ext(file_list[i]) == avoid_file){
-    temp_data <- read.xlsx(xlsxFile = file_list[i],sheet = sheet)
-    temp_data$Source_Name <- sapply(strsplit(gsub(".xlsx", "", file_list[i]), "_"), function(x){x[2]})
-    dataset <- rbind(dataset, temp_data)}
-    if (get.ext(file_list[i]) != avoid_file) next}
-  
-  dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
-  return(dataset)}                      
   

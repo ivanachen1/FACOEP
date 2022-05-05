@@ -23,15 +23,18 @@ archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one,
                                            file = "parametros_servidor.xlsx")
 
 
-pw <- GetPassword()
+pw <- GetParameter(x = archivo_parametros,
+                   parameter = "password")
 
 drv <- dbDriver("PostgreSQL")
 
-user <- GetUser()
+user <- GetParameter(x = archivo_parametros,parameter = "user")
 
-host <- GetHost()
+host <- GetParameter(x = archivo_parametros,parameter = "host")
 
-con <- dbConnect(drv, dbname = "facoep", 
+database <- GetParameter(x = archivo_parametros,parameter = "database")
+
+con <- dbConnect(drv, dbname = database, 
                  host = host,
                  port = 5432,
                  user = user,
@@ -44,6 +47,7 @@ SelectQuery <- paste("SELECT",
                  "CONCAT(nota.comprobanteentidadcodigo,'-',os.obsocialessigla) AS OOSS,",
                  "hosp.pprnombre as Efector,",
                  "crgs.comprobantecrgnro as CRG,",
+                 "cg.crgauditoriamedicausuario as auditor,",
                  "mot.motivodebitodescripcion as TipoDebito,",
                  "cat.motivodebitocategorianombre as Categoria,",
                  "dets.comprobantecrgdetmotivodescrip as Observaciones,",
@@ -71,6 +75,7 @@ SelectQuery <- paste("SELECT",
                  "LEFT JOIN motivodebito mot ON mot.motivodebitoid = dets.comprobantecrgdetmotivodebcred",
                  "LEFT JOIN motivodebitocategoria cat ON cat.motivodebitoid = dets.comprobantecrgdetmotivodebcred AND cat.motivodebitocategoriaid = dets.comprobantecrgdetmotdebcredcat",
                  "LEFT JOIN obrassociales os ON os.obsocialesclienteid = nota.comprobanteentidadcodigo",
+                 "LEFT JOIN crg cg ON dets.comprobantepprid = cg.pprid AND dets.comprobantecrgnro = cg.crgnum",
                  "WHERE nota.tipocomprobantecodigo IN ('NOTADB')")
 
 
@@ -84,6 +89,7 @@ MotivosDebitos <- select(MotivosDebitos,
                          "OOSS" = ooss,
                          "Efector" = efector,
                          "NroCRG" = crg,
+                         "Auditor" = auditor,
                          "Tipo Debito"= tipodebito,
                          "Categoria"= categoria,
                          "Observaciones" = observaciones,

@@ -1,8 +1,8 @@
-workdirectory_one <- "C:/Users/User/Desktop/FACOEP/DBA/Reportes BI/2021/Efectores"
+workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Efectores"
+
 workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranzas/Versión 7"
 
-source("C:/Users/User/Desktop/FACOEP/DBA/Reportes BI/2021/Efectores/Script_Efectores_Funciones.r")
-
+source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Efectores/Script_Efectores_Funciones.r")
 
 
 archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one, 
@@ -52,6 +52,7 @@ query <- glue("SELECT
 hosp.pprnombre as Efector,
 CAST(ooss.clienteid AS TEXT) || ' - ' || CAST(ooss.clientenombre AS TEXT) as OOSS,
 CAST(fact.tipocomprobantecodigo AS TEXT) || ' - ' || CAST(fact.comprobanteprefijo AS TEXT) || ' - ' || CAST(fact.comprobantecodigo AS TEXT) as Factura,
+fact.comprobanteccosto as CentroCosto,
 CAST(asoc.comprobanteasoctipo AS TEXT) || ' - ' || CAST(asoc.comprobanteasocprefijo AS TEXT) || ' - ' || CAST(asoc.comprobanteasoccodigo AS TEXT) as impugnacion,
 dets.comprobantecrgdetpractica as prestacion,
 nota.comprobantefechaemision as Fecha,
@@ -112,6 +113,7 @@ Base$impugnacion <- gsub(" ","",Base$impugnacion)
 Base <- select(Base, "Efector" = efector, 
                "Obra social" = ooss,
                "Factura" = factura,
+               "CentroCosto" = centrocosto,
                "Impugnacion" = impugnacion,
                "Prestacion" = prestacion,
                "FechaNotaDB" = fecha,
@@ -123,5 +125,3 @@ Base <- select(Base, "Efector" = efector,
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 
 rm(archivo_parametros,tabla_parametros_comprobantes,con,drv)
-
-
