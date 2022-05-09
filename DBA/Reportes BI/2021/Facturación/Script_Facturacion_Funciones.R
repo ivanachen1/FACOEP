@@ -24,25 +24,12 @@ GetArchivoParametros <- function(path_one,path_two,file){
     return(read.xlsx(paste(path_one,file,sep = "/")))} else {return(read.xlsx(paste(path_two,file,sep = "/")))}
 }  
 
-GetPassword <- function(x = archivo_parametros){
-  pw <- filter(archivo_parametros,Parametros.servidor == "password")
+GetParameter <- function(x = archivo_parametros,parameter){
+  pw <- filter(archivo_parametros,Parametros.servidor == parameter)
   pw <- filter(pw,Usar == TRUE)
   pw <- pw$Valor
   return(pw)
 }
-
-GetUser <- function(x = archivo_parametros){
-  user <- filter(archivo_parametros,Parametros.servidor == "user")
-  user <- filter(user,Usar == TRUE)
-  user <- user$Valor
-  return(user)}
-
-GetHost <- function(x = archivo_parametros){
-  host <- filter(archivo_parametros,Parametros.servidor == "host")
-  host <- filter(host,Usar == TRUE)
-  host <- host$Valor
-  return(host)}
-
 
 GetFile <- function(file_name,path_one,path_two){
   intento  <- is.error(try(read.xlsx(paste(path_two,file_name,sep = "/")),silent = F,outFile = "Error"))
