@@ -41,14 +41,16 @@ CodigosOOSSDesestimar$Comprobante <- CodigosOOSSDesestimar$Codigos.Obra.Social.a
 
 CodigosOOSSDesestimar<- GetListaINSQL(CodigosOOSSDesestimar)
 
-ComprobantesDesestimar <- GetFile(file_name = "comprobantes a desestimar.xlsx",
+ComprobantesDesestimar <- GetFile(file_name = "ComprobantesDesestimar.xlsx",
                                  path_one = workdirectory,
                                  path_two = workdirectory)
 
+ComprobantesDesestimar$comprobante <-paste(ComprobantesDesestimar$tipo,
+                               ComprobantesDesestimar$prefijo,
+                               ComprobantesDesestimar$codigo,sep = "-")
 
-ComprobantesDesestimar$Comprobante <- ComprobantesDesestimar$Listado.Comprobantes.a.desestimar
+ComprobantesDesestimar <- as.vector(ComprobantesDesestimar$comprobante)
 
-ComprobantesDesestimar<- GetListaINSQL(ComprobantesDesestimar)
 
 ObjetivosData <- GetFile(file_name = "Objetivos.xlsx",
                                   path_one = workdirectory,
@@ -100,7 +102,7 @@ SIF2Query <- glue(paste("SELECT pprnombre,",
                                     
                         "WHERE c.comprobantetipoentidad = 2 and comprobantepprid > 0 and",
                         "c.tipocomprobantecodigo IN({comprobantes_query})",
-                        "AND c.comprobantecodigo NOT IN ({ComprobantesDesestimar}) AND c.comprobanteccosto = 5"),sep = "\n")
+                        "AND c.comprobanteccosto = 5"),sep = "\n")
 
 cat(SIF2Query)
 
@@ -120,6 +122,8 @@ Efectores <- rbind(Efectores,Cesacs)
 
 SIF2 <- CleanTablaComprobantes(SIF2)
 ############ Crear una funcion que me borre facturas Marcadas en un excel######################
+
+SIF2 <- SIF2 %>% filter(!NroComprobante %in% c(ComprobantesDesestimar))
 
 SIF2$comprobantefechaemision <- as.Date(SIF2$comprobantefechaemision)
 SIF2$emisioncrg <- as.Date(SIF2$emisioncrg)
