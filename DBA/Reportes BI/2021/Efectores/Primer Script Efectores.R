@@ -1,13 +1,15 @@
-workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Efectores"
-workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranzas/Versión 7"
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Efectores"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranzas/Versión 7"
 
-source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Efectores/Script_Efectores_Funciones.r")
+Archivo <- "Script_Efectores_Funciones.r"
 
+source(paste(workdirectory,Archivo,sep = "/"))
+#WorkDirectoryComprobantesDesestimar <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+WorkDirectoryComprobantesDesestimar <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
 
-
-archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one, 
-                                           path_two = workdirectory_two, 
-                                           file = "parametros_servidor.xlsx")
+archivo_parametros <- GetFile(path_one = workdirectory, 
+                              path_two = workdirectory, 
+                              file = "parametros_servidor.xlsx")
 
 pw <- GetPassword()
 
@@ -25,8 +27,8 @@ con <- dbConnect(drv, dbname = database,
 
 
 tabla_parametros_comprobantes <- GetFile("tabla_parametros_comprobantes.xlsx",
-                                         path_one = workdirectory_one,
-                                         path_two = workdirectory_two)
+                                         path_one = workdirectory,
+                                         path_two = workdirectory)
 
 
 tabla_parametros_comprobantes <- TransformFile(tabla_parametros_comprobantes,FilterOne = "factura")
@@ -34,6 +36,16 @@ tabla_parametros_comprobantes <- TransformFile(tabla_parametros_comprobantes,Fil
 FacturasQuery <- TransformFile(tabla_parametros_comprobantes,FilterOne = "factura")
 
 FacturasQuery <- GetListaINSQL(FacturasQuery,print = FALSE)
+
+ComprobantesDesestimar <- GetFile(file_name = "ComprobantesDesestimar.xlsx",
+                                  path_one = WorkDirectoryComprobantesDesestimar,
+                                  path_two = WorkDirectoryComprobantesDesestimar)
+
+ComprobantesDesestimar$comprobante <-paste(ComprobantesDesestimar$tipo,
+                                           ComprobantesDesestimar$prefijo,
+                                           ComprobantesDesestimar$codigo,sep = "-")
+
+ComprobantesDesestimar <- as.vector(ComprobantesDesestimar$comprobante)
 
 Base <- glue(paste("SELECT",
                    "c.comprobanteccosto as CentroCosto,",
@@ -70,6 +82,8 @@ Base <- dbGetQuery(conn = con,Base)
 
 Base <- CleanTablaComprobantes(tabla_comprobantes = Base)
 
+Base <- Base %>% filter(!NroComprobante %in% c(ComprobantesDesestimar))
+
 Base <- unique(Base)
 
 Base <- select(Base, 
@@ -93,3 +107,4 @@ CentroCostos <- dbGetQuery(conn = con,QueryCentroCosto)
 
 # Cierra todo
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
