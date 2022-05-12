@@ -1,11 +1,11 @@
 #workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Efectores"
-workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranzas/Versión 7"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Efectores/version2"
 
 Archivo <- "Script_Efectores_Funciones.r"
 
 source(paste(workdirectory,Archivo,sep = "/"))
 #WorkDirectoryComprobantesDesestimar <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-WorkDirectoryComprobantesDesestimar <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
+WorkDirectoryComprobantesDesestimar <- "E:/Estadisticas"
 
 archivo_parametros <- GetFile(path_one = workdirectory, 
                               path_two = workdirectory, 
