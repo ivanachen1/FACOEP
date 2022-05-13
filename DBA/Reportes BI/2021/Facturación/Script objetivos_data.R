@@ -2,7 +2,8 @@ workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pabl
 #workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
 
 
-WorkDirectoryComprobantesDesestimar <- "E:/Estadisticas"
+#WorkDirectoryComprobantesDesestimar <- "E:/Estadisticas"
+WorkDirectoryComprobantesDesestimar<- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -125,7 +126,6 @@ colnames(Cesacs) <- c("ID","sif","EfectorObjetivos")
 Efectores <- rbind(Efectores,Cesacs)
 
 SIF2 <- CleanTablaComprobantes(SIF2)
-############ Crear una funcion que me borre facturas Marcadas en un excel######################
 
 SIF2 <- SIF2 %>% filter(!NroComprobante %in% c(ComprobantesDesestimar))
 

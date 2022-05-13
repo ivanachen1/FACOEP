@@ -1,30 +1,19 @@
-workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
+workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+
+
 Archivo <-"Script_Facturacion_Funciones.R"
-#source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
 
-
-GetFileAux <- function(workdirectory_one,workdirectory_two,Archivo){
-  intento <- try(source(paste(workdirectory_one,Archivo,sep = "/")),silent = TRUE)
-  if (class(intento) == "try-error"){
-    return(source(paste(workdirectory_two,Archivo,sep = "/")))} else {return(source(paste(workdirectory_one,Archivo,sep = "/")))}
-}
+source(paste(workdirectory,Archivo,sep = "/"))
 
 
 
-GetFileAux(workdirectory_one = workdirectory_one,
-           workdirectory_two = workdirectory_two,
-           Archivo = "Script_Facturacion_Funciones.R")
-
-
-
-archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one,
-                                           path_two = workdirectory_two,
+archivo_parametros <- GetArchivoParametros(path_one = workdirectory,
+                                           path_two = workdirectory,
                                            file = "parametros_servidor.xlsx")
 
 tipo_comprobantes <- GetFile("tipo_comprobante.xlsx",
-                             path_one = workdirectory_one,
-                             path_two = workdirectory_two)
+                             path_one = workdirectory,
+                             path_two = workdirectory)
 
 
 tipo_comprobantes$Comprobante <- tipo_comprobantes$Tipo.Comprobante
@@ -33,42 +22,42 @@ tipo_comprobantes$Comprobante <- tipo_comprobantes$Tipo.Comprobante
 comprobantes_query <- GetListaINSQL(tipo_comprobantes)
 
 CentrosCostos  <- GetFile("centro_costo_comprobantes.xlsx",
-                                              path_one = workdirectory_one,
-                                              path_two = workdirectory_two)
+                                              path_one = workdirectory,
+                                              path_two = workdirectory)
 
-pw <- GetPassword()
+pw <- GetParameter(x = archivo_parametros,parameter = "password")
 
 drv <- dbDriver("PostgreSQL")
 
-user <- GetUser()
+user <- GetParameter(x = archivo_parametros,parameter = "user")
 
-host <- GetHost()
-con <- dbConnect(drv, dbname = "facoep", 
+host <- GetParameter(x = archivo_parametros,parameter = "host")
+
+database <- GetParameter(x = archivo_parametros,parameter = "database")
+
+con <- dbConnect(drv, dbname = database, 
                  host = host,
                  port = 5432,
                  user = user,
                  password = pw)
 
 
-postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
+comprobantes <- glue(paste( "SELECT comprobanteccosto,",
+                            "CONCAT(os.clienteid,'-',os.clientenombre) as OS,",
+                            "c.tipocomprobantecodigo,",
+                            "c.comprobanteprefijo,",
+                            "c.comprobantecodigo,",
+                            "c.comprobantefechaemision,",
+                            "c.comprobantetotalimporte,",
+                            "CASE WHEN c.comprobantedetalle LIKE '%ANULADO%' THEN 'SI' ELSE 'NO' END AS Anulado,", 
+                            "os.clienteid",
 
-
-comprobantes <- glue("SELECT comprobanteccosto,
-                      CAST(os.clienteid AS TEXT) || ' - ' || CAST(os.clientenombre AS TEXT) as OS,
-                      c.tipocomprobantecodigo,
-                      c.comprobanteprefijo,
-                      c.comprobantecodigo,
-                      c.comprobantefechaemision,
-                      c.comprobantetotalimporte,
-                      CASE WHEN c.comprobantedetalle LIKE '%ANULADO%' THEN 'SI' ELSE 'NO' END AS Anulado, 
-                      os.clienteid
-
-
-
-  FROM comprobantes c
-   LEFT JOIN clientes os ON os.clienteid = c.comprobanteentidadcodigo
+                            "FROM comprobantes c",
+                            "LEFT JOIN clientes os ON os.clienteid = c.comprobanteentidadcodigo",
                                   
-  WHERE c.comprobantetipoentidad = 2 and c.tipocomprobantecodigo IN ({comprobantes_query}) AND c.comprobantefechaemision > '01-01-2017'")
+                            "WHERE c.comprobantetipoentidad = 2 AND",
+                            "c.tipocomprobantecodigo IN ({comprobantes_query}) AND",
+                            "c.comprobantefechaemision > '01-01-2017'"))
 
 
 comprobantes <- dbGetQuery(con,comprobantes) 
@@ -107,5 +96,6 @@ comprobantes <- select(comprobantes,
                        "Dia" = dia,
                        "Nombre del Mes" = NombreMes,
                        "NroComprobante" = NroComprobante)
+
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
