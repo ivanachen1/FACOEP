@@ -1,77 +1,53 @@
-workdirectory_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación/"
-workdirectory_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
+workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
 
 
+#WorkDirectoryComprobantesDesestimar <- "E:/Estadisticas"
+WorkDirectoryComprobantesDesestimar<- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
 
+workdirectory_three <- "C:/Users/iachenbach/Desktop/repositorio sigehos"
 
 Archivo <-"Script_Facturacion_Funciones.R"
-#source("C:/Users/iachenbach/Desktop/Facoep - Scripts/DBA/Reportes BI/2021/Facturación/Script_Facturacion_Funciones.R")
+
+source(paste(workdirectory,Archivo,sep = "/"))
 
 
-GetFileAux <- function(workdirectory_one,workdirectory_two,Archivo){
-  intento <- try(source(paste(workdirectory_one,Archivo,sep = "/")),silent = TRUE)
-  if (class(intento) == "try-error"){
-    return(source(paste(workdirectory_two,Archivo,sep = "/")))} else {return(source(paste(workdirectory_one,Archivo,sep = "/")))}
-}
-
-
-
-GetFileAux(workdirectory_one = workdirectory_one,
-           workdirectory_two = workdirectory_two,
-           Archivo = "Script_Facturacion_Funciones.R")
-
-archivo_parametros <- GetArchivoParametros(path_one = workdirectory_one,
-                                           path_two = workdirectory_two,
+archivo_parametros <- GetArchivoParametros(path_one = workdirectory,
+                                           path_two = workdirectory,
                                            file = "parametros_servidor.xlsx")
 
 
-pw <- GetPassword()
+pw <- GetParameter(x = archivo_parametros,
+                   parameter = "password")
 
 drv <- dbDriver("PostgreSQL")
 
-user <- GetUser()
+user <- GetParameter(x = archivo_parametros,
+                     parameter = "user")
 
-host <- GetHost()
+host <- GetParameter(x = archivo_parametros,
+                     parameter = "host")
 
-con <- dbConnect(drv, dbname = "facoep", 
+database <- GetParameter(x = archivo_parametros,
+                         parameter = "database")
+
+con <- dbConnect(drv, dbname = database, 
                  host = host,
                  port = 5432,
                  user = user,
                  password = pw)
 
+
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
 estados  <- GetFile("crg_estados.xlsx",
-                          path_one = workdirectory_one,
-                          path_two = workdirectory_two)
+                          path_one = workdirectory,
+                          path_two = workdirectory)
 
-efectores  <- GetFile("Efectores.xlsx",
-                    path_one = workdirectory_one,
-                    path_two = workdirectory_two)
+efectores  <- GetFile("EfectoresObjetivos.xlsx",
+                    path_one = workdirectory,
+                    path_two = workdirectory)
 
-SIF <- dbGetQuery(con, "SELECT pprnombre as SIF, crgnum, crgfchemision,crgestado
-                        FROM crg c LEFT JOIN proveedorprestador p ON p.pprid = c.pprid")
-
-SIF <- left_join(SIF,estados)
-
-SIF$crgestado <- NULL
-
-# Reemplazo los valores nulos por Ingresado por definicion de negocio
-
-SIF$estado[is.na(SIF$estado)] <- "INGRESADO"
-
-SIF <- left_join(SIF,efectores,by = c("sif" = "sif"))
-
-# Reemplazo los NA por CESAC por definicion de Negocio
-
-SIF$Efector[is.na(SIF$Efector)] <- "CESAC"
-
-SIF$Id <- paste(SIF$Efector,SIF$crgnum,sep = "-")
-SIF$Id2 <- paste(SIF$Efector,SIF$crgnum,sep = "-")
-
-#SIF 1 esta terminado
-
-workdirectory_three <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación/repositorio SIGHEOS"
 
 Sigehos <- ReadSigehosData(workdirectory = workdirectory_three,
                            sheet = "Base")
@@ -80,15 +56,27 @@ Sigehos <- unique(Sigehos)
 
 Sigehos$Anio <- year(Sigehos$Fecha)
 
-Sigehos$Id <- paste(Sigehos$Efector,Sigehos$Numero,sep = "-")
-
-Sigehos <- left_join(Sigehos,SIF,by = c("Id" = "Id"))
-
-Sigehos$EstadoSIF <- ifelse(Sigehos$Id == Sigehos$Id2,Sigehos$estado,
-                           ifelse(Sigehos$Id != Sigehos$Id2,Sigehos$estado,"INGRESADO",
-                                  "INGRESADO"))
+Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"))
 
 
+Sigehos$IdSIF <- paste(Sigehos$ID,Sigehos$Numero,sep = "-")
 
-                     
+Sigehos$EfectorObjetivos <- NULL
+Sigehos$sif <- NULL
+
+
+SIF <- dbGetQuery(con, "SELECT pprid, crgnum, crgfchemision,crgestado
+                        FROM crg")
+
+SIF <- left_join(SIF,estados)
+
+SIF$ID <- paste(SIF$pprid,SIF$crgnum,sep = "-")
+
+SIF$crgestado <- NULL
+
+Sigehos <- left_join(Sigehos,SIF,by = c("IdSIF" = "ID"))
+
+data <- data.frame("Efector" = unique(Sigehos$Efector))
+
+write.csv(data,file = "EfectoresCorregir.csv")                     
                   
