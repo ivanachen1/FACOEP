@@ -26,6 +26,10 @@ Efectores <- GetFile("EfectoresObjetivos.xlsx",
                              path_one = workdirectory,
                              path_two = workdirectory)
 
+Efectores <- select(Efectores,ID,sif,EfectorObjetivos,MostrarGrafico)
+
+Efectores <- unique(Efectores)
+
 
 tipo_comprobantes$Comprobante <- tipo_comprobantes$TipoComprobante
 
@@ -121,7 +125,8 @@ Cesacs <- dbGetQuery(con,paste("SELECT pprid,pprnombre,",
 Cesacs <- filter(Cesacs,cesac == TRUE)
 Cesacs$cesac <- NULL
 Cesacs$EfectorObjetivos <- "Cesacs"
-colnames(Cesacs) <- c("ID","sif","EfectorObjetivos")
+Cesacs$MostrarGrafico <- 2
+colnames(Cesacs) <- c("ID","sif","EfectorObjetivos","MostrarGrafico")
 
 Efectores <- rbind(Efectores,Cesacs)
 
@@ -139,10 +144,10 @@ SIF2$AnioEmision <- year(SIF2$comprobantefechaemision)
 SIF2 <- left_join(SIF2,Efectores, by = c("pprid" = "ID"))
 
 SIF2 <- aggregate(SIF2$comprobantecrgimportetotaldeta
-                  ,by = list(SIF2$EfectorObjetivos,SIF2$Anio),
+                  ,by = list(SIF2$EfectorObjetivos,SIF2$Anio,SIF2$MostrarGrafico),
                   FUN = sum)
 
-colnames(SIF2) <- c("Efector","Anio","Total.Facturado")
+colnames(SIF2) <- c("Efector","Anio","MostrarGrafico","Total.Facturado")
 
 SIF2$Fk <- paste(SIF2$Anio,SIF2$Efector,sep = "-")
 
@@ -158,6 +163,7 @@ ObjetivosData <- select(ObjetivosData,
                         "Objetivo.Anual.PAMI"= Objetivo.Anual.PAMI,
                         "Año" = Año,
                         "SIF.Total.Facturado" = Total.Facturado,
+                        "MostrarGrafico" = MostrarGrafico,
                         "fk" = fk)
 
 rm(CentrosCostos,Efectores,SIF2,tipo_comprobantes,Cesacs,archivo_parametros,con,drv)

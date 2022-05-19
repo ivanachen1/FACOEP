@@ -61,7 +61,6 @@ Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"))
 
 Sigehos$IdSIF <- paste(Sigehos$ID,Sigehos$Numero,sep = "-")
 
-Sigehos$EfectorObjetivos <- NULL
 Sigehos$sif <- NULL
 
 
@@ -76,7 +75,21 @@ SIF$crgestado <- NULL
 
 Sigehos <- left_join(Sigehos,SIF,by = c("IdSIF" = "ID"))
 
-data <- data.frame("Efector" = unique(Sigehos$Efector))
+Sigehos$estado1 <- ifelse(is.na(Sigehos$estado),"NO INGRESADO",Sigehos$estado)
 
-write.csv(data,file = "EfectoresCorregir.csv")                     
+Sigehos <- select(Sigehos,
+                  "Efector" = EfectorObjetivos,
+                  "Fecha" = Fecha,
+                  "Numero" = Numero,
+                  "Tipo De Anexo" = Tipo.Anexo,
+                  "Estado Sigehos" = Estado,
+                  "Estado SIF" = estado1,
+                  "Financiador" = Financiador,
+                  "Importe Total" = Importe.Total,
+                  "Tipo Cobertura" = Tipo.Cobertura,
+                  "Anio" = Anio,
+                  "Fecha Emision CRG" = crgfchemision)
+
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
                   
