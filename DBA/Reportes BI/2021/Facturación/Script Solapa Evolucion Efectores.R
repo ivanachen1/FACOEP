@@ -26,6 +26,10 @@ Efectores <- GetFile("EfectoresObjetivos.xlsx",
                      path_one = workdirectory,
                      path_two = workdirectory)
 
+Efectores <- select(Efectores,ID,sif,EfectorObjetivos)
+
+Efectores <- unique(Efectores)
+
 
 tipo_comprobantes$Comprobante <- tipo_comprobantes$TipoComprobante
 
