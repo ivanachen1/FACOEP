@@ -54,6 +54,8 @@ Sigehos <- ReadSigehosData(workdirectory = workdirectory_three,
 
 Sigehos <- unique(Sigehos)
 
+SigehosControl <- SigehosFileControl(Sigehos,efectores,FileName = "Control-Sigehos.xlsx")
+
 Sigehos$Anio <- year(Sigehos$Fecha)
 
 Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"))
@@ -91,5 +93,3 @@ Sigehos <- select(Sigehos,
                   "Fecha Emision CRG" = crgfchemision)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
-
-                  

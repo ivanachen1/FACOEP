@@ -94,5 +94,23 @@ ReadSigehosData <- function(workdirectory,sheet){
   
   dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
   
-  return(dataset)}                      
+  return(dataset)}
+
+SigehosFileControl <- function(DataFrameSigehos,DataframeEfectoresObjetivos,FileName){
+  SigehosControl <- data.frame("EfectorSigehos" = unique(DataFrameSigehos$Efector))
+  Control <- left_join(SigehosControl,DataframeEfectoresObjetivos,
+                       by= c("EfectorSigehos" = "EfectorSigehos"),
+                       keep = TRUE)
+
+  Control <- select(Control,"EfectorSigehos" = EfectorSigehos.x,
+                    "EfectorSigehosExcel" = EfectorSigehos.y,
+                    "ID" = ID,
+                    "EfectorObjetivos" = EfectorObjetivos)
+  
+  Control <- filter(Control,is.na(ID))
+  write.xlsx(Control,FileName)
+  
+  return(Control)
+  
+}
   

@@ -43,51 +43,6 @@ con <- dbConnect(drv, dbname = database,
 
 ############################################## CONSULTAS ######################################################
 
-nuevo_pami <- glue(paste("SELECT comprobantefechaemision as emision,",
-                         "tipocomprobantecodigo,",
-                         "comprobanteprefijo,",
-                         "comprobantecodigo,",
-                         "ccostodescripcion,", 
-                         "sccostodescripcion,",
-                         "tpoliqdescripcion,",
-                         "comprobantetotalimporte,",
-                         "comprobantedetalle",
-
-                         "FROM comprobantes c",
-                         "LEFT JOIN centrocostos cc ON c.comprobanteccosto = cc.ccostocodigo",
-                         
-                         "LEFT JOIN subcentrocostos sc",
-                         "ON c.comprobanteccosto = sc.ccostocodigo",
-                         "AND c.comprobantesccosto = sc.sccostocodigo",
-                         
-                         "LEFT JOIN tipoliquidacion tp",
-                         "ON tp.tpoliqcodigo = c.comprobantetipoliq",
-                         "AND tp.ccostocodigo = c.comprobanteccosto",
-                         "AND tp.sccostocodigo = c.comprobantesccosto",
-                         
-                         "WHERE comprobanteccosto = 1",
-                         "AND comprobantefechaemision >= '2021-01-01'",
-                         "AND tipocomprobantecodigo IN ({comprobantes_query})",
-                         "AND comprobantedetalle not like '%ANULA%'"))
-
-nuevo_pami <- dbGetQuery(con,nuevo_pami)
-
-nuevo_pami <- CleanTablaComprobantes(nuevo_pami)
-
-nuevo_pami <- left_join(nuevo_pami,tipo_comprobantes,by = c("tipocomprobantecodigo" = "Comprobante"))
-
-
-nuevo_pami$comprobantetotalimporte <- nuevo_pami$comprobantetotalimporte * nuevo_pami$Multiplicador
-  
-nuevo_pami$tipo <- nuevo_pami$TipoPami
-
-nuevo_pami$TipoPami <- NULL
-
-nuevo_pami$Multiplicador <- NULL
-
-nuevo_pami$comprobantetotalimporte <- ifelse(nuevo_pami$sccostodescripcion == "CAPITA CLIENTE", 0,
-                                       nuevo_pami$comprobantetotalimporte)
-
 DetallesPAMICapita <- GetFile("Detalles PAMI Cápita.xlsx",
                               path_one = workdirectory,
                               path_two = workdirectory)
