@@ -1,9 +1,5 @@
-workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
-
-
-#WorkDirectoryComprobantesDesestimar <- "E:/Estadisticas"
-WorkDirectoryComprobantesDesestimar<- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -51,8 +47,8 @@ CodigosOOSSDesestimar$Comprobante <- CodigosOOSSDesestimar$Codigos.Obra.Social.a
 CodigosOOSSDesestimar<- GetListaINSQL(CodigosOOSSDesestimar)
 
 ComprobantesDesestimar <- GetFile(file_name = "ComprobantesDesestimar.xlsx",
-                                  path_one = WorkDirectoryComprobantesDesestimar,
-                                  path_two = WorkDirectoryComprobantesDesestimar)
+                                  path_one = workdirectory,
+                                  path_two = workdirectory)
 
 ComprobantesDesestimar$comprobante <-paste(ComprobantesDesestimar$tipo,
                                            ComprobantesDesestimar$prefijo,

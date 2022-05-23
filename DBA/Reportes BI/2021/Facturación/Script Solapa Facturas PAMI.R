@@ -1,4 +1,8 @@
-workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
+
+#workdirectoryPami <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+workdirectoryPami <- "E:/Estadisticas"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -44,8 +48,8 @@ con <- dbConnect(drv, dbname = database,
 ############################################## CONSULTAS ######################################################
 
 DetallesPAMICapita <- GetFile("Detalles PAMI Cápita.xlsx",
-                              path_one = workdirectory,
-                              path_two = workdirectory)
+                              path_one = workdirectoryPami,
+                              path_two = workdirectoryPami)
 
 
 DetallesPAMICapita$Emision <- as.Date(DetallesPAMICapita$Emision,origin = "1899-12-30")

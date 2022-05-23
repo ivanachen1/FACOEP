@@ -1,11 +1,8 @@
-workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3"
-
-
-#WorkDirectoryComprobantesDesestimar <- "E:/Estadisticas"
-WorkDirectoryComprobantesDesestimar<- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
 
 workdirectory_three <- "C:/Users/iachenbach/Desktop/repositorio sigehos"
+workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/repositorio SIGHEOS"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 

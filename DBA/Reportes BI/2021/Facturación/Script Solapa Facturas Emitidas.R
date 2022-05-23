@@ -1,5 +1,5 @@
-workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -96,6 +96,5 @@ comprobantes <- select(comprobantes,
                        "Dia" = dia,
                        "Nombre del Mes" = NombreMes,
                        "NroComprobante" = NroComprobante)
-
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})

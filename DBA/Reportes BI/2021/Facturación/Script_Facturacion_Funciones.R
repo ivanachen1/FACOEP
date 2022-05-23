@@ -13,7 +13,7 @@ library("RPostgreSQL")
 library(BBmisc)
 library(glue)
 library(readxl)
-library(reader)
+#library(reader)
 library(stringr)
 
 
@@ -108,7 +108,7 @@ SigehosFileControl <- function(DataFrameSigehos,DataframeEfectoresObjetivos,File
                     "EfectorObjetivos" = EfectorObjetivos)
   
   Control <- filter(Control,is.na(ID))
-  write.xlsx(Control,FileName)
+  write.xlsx(Control,FileName,overwrite = TRUE)
   
   return(Control)
   
