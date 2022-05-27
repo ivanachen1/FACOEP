@@ -76,7 +76,7 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
   return(tabla_comprobantes)
 }
 
-ReadSigehosData <- function(workdirectory,sheet){
+ReadSigehosData <- function(workdirectory,StartRow){
 
   file_list <- list.files(path=workdirectory)
   dataset <- data.frame()
@@ -89,10 +89,16 @@ ReadSigehosData <- function(workdirectory,sheet){
     correct_format <- ".xlsx" 
     
     if(str_detect(file_list[i],correct_format) == TRUE){
-      temp_data <- read.xlsx(xlsxFile = paste(workdirectory,file_list[i],sep = "/"),sheet = sheet)
+      
+      EfectorName <- read.xlsx(xlsxFile = paste(workdirectoryFiles,
+                                                file_list[i],sep = "/"))
+      EfectorName <- names(EfectorName)[[1]]
+      
+      temp_data <- read.xlsx(xlsxFile = paste(workdirectory,file_list[i],sep = "/"),startRow = StartRow)
+      temp_data$Efector <- EfectorName
       dataset <- rbind(dataset, temp_data)}}
   
-  dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
+  #dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
   
   return(dataset)}
 
