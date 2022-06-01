@@ -18,6 +18,7 @@ library(stringr)
 
 
 
+
 GetArchivoParametros <- function(path_one,path_two,file){
   intento  <- is.error(try(read.xlsx(paste(path_two,file,sep = "/")),silent = F,outFile = "Error"))
   if(intento == TRUE){
@@ -89,11 +90,9 @@ ReadSigehosData <- function(workdirectory,StartRow){
     correct_format <- ".xlsx" 
     
     if(str_detect(file_list[i],correct_format) == TRUE){
-      
-      EfectorName <- read.xlsx(xlsxFile = paste(workdirectoryFiles,
+      EfectorName <- read.xlsx(xlsxFile = paste(workdirectory,
                                                 file_list[i],sep = "/"))
       EfectorName <- names(EfectorName)[[1]]
-      
       temp_data <- read.xlsx(xlsxFile = paste(workdirectory,file_list[i],sep = "/"),startRow = StartRow)
       temp_data$Efector <- EfectorName
       dataset <- rbind(dataset, temp_data)}}

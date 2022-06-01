@@ -45,17 +45,30 @@ efectores  <- GetFile("EfectoresObjetivos.xlsx",
                     path_one = workdirectory,
                     path_two = workdirectory)
 
+TipoFinanciador <- GetFile("tipo_financiador.xlsx",
+                           path_one = workdirectory,
+                           path_two = workdirectory)
+
 
 Sigehos <- ReadSigehosData(workdirectory = workdirectory_three,
                            StartRow = 11)
 
 Sigehos <- unique(Sigehos)
 
+Sigehos <- filter(Sigehos,!(is.na(Numero)))
+
+Sigehos <- left_join(Sigehos,TipoFinanciador,by = c('Financiador' = 'Financiador'))
+
 SigehosControl <- SigehosFileControl(Sigehos,efectores,FileName = "Control-Sigehos.xlsx")
 
+Sigehos$Fecha <- as.numeric(Sigehos$Fecha)
+Sigehos$Fecha <- as.Date(Sigehos$Fecha,origin = "1899-12-30")
 Sigehos$Anio <- year(Sigehos$Fecha)
 
-Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"))
+Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"),
+                     keep = FALSE)
+
+SigehosExcel <- Sigehos
 
 
 Sigehos$IdSIF <- paste(Sigehos$ID,Sigehos$Numero,sep = "-")
@@ -90,3 +103,18 @@ Sigehos <- select(Sigehos,
                   "Fecha Emision CRG" = crgfchemision)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
+SigehosExcel <- select(SigehosExcel,
+                       "Efector" = EfectorObjetivos,
+                       "Fecha" = Fecha,
+                       "Numero" = Numero,
+                       "Tipo Anexo" = Tipo.Anexo,
+                       "Estado" = Estado,
+                       "Cant DPHs" = Cant..DPHs,
+                       "Financiador" = Financiador,
+                       "Tipo Cobertura" = Tipo.Cobertura,
+                       "Anio" = Anio,
+                       "Importe Total" = Importe.Total)
+
+write.csv(SigehosExcel,"Test.csv")
+#convert_xls_as_xlsx(workdirectory_three,workdirectory)
