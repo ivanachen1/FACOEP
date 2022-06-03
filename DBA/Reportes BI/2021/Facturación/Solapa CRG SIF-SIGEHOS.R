@@ -1,7 +1,7 @@
 workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
 #workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
 
-workdirectory_three <- "C:/Users/iachenbach/Desktop/crg"
+workdirectory_three <- "C:/Users/iachenbach/Desktop/test"
 #workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/repositorio SIGHEOS"
 
 Archivo <-"Script_Facturacion_Funciones.R"
@@ -57,7 +57,7 @@ Sigehos <- unique(Sigehos)
 
 Sigehos <- filter(Sigehos,!(is.na(Numero)))
 
-Sigehos <- left_join(Sigehos,TipoFinanciador,by = c('Financiador' = 'Financiador'))
+Sigehos <- left_join(Sigehos,TipoFinanciador,by = c('Financiador' = 'Financiador'),keep = TRUE)
 
 SigehosControl <- SigehosFileControl(Sigehos,efectores,FileName = "Control-Sigehos.xlsx")
 
@@ -116,5 +116,11 @@ SigehosExcel <- select(SigehosExcel,
                        "Anio" = Anio,
                        "Importe Total" = Importe.Total)
 
+FinanciadoresNoDefinidos <- filter(SigehosExcel,is.na(Financiador.y))
+FinanciadoresNoDefinidos <- unique(select(FinanciadoresNoDefinidos,
+                                   "Financiador" = Financiador.x))
+
+write.xlsx(FinanciadoresNoDefinidos,"Financiadores Sin Definir.xlsx")
+
 write.csv(SigehosExcel,"Test.csv")
-#convert_xls_as_xlsx(workdirectory_three,workdirectory)
+convert_xls_as_xlsx(workdirectory_three,workdirectory)
