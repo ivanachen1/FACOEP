@@ -10,9 +10,13 @@ library(formattable)
 library(stringr)
 library(plyr)
 library(zoo)
-library("RPostgreSQL")
 library(lubridate)
+library("RPostgreSQL")
+library(BBmisc)
 library(glue)
+library(readxl)
+#library(reader)
+library(stringr)
 
 GetParameter <- function(x = archivo_parametros,parameter){
   parameter <- filter(archivo_parametros,Parametros.servidor == parameter)
@@ -60,6 +64,13 @@ GetQuery <- function(fecha_actual,fecha_anterior){
   nombre_archivo <- glue(paste("Facturado_{mes_actual}_{anio_actual}.csv"))
                          
   return(list(query,nombre_archivo))}
+
+GetFile <- function(file_name,path_one,path_two){
+  intento  <- is.error(try(read.xlsx(paste(path_two,file_name,sep = "/")),silent = F,outFile = "Error"))
+  
+  if(intento == TRUE){
+    return(read.xlsx(paste(path_one,file_name,sep = "/")))} else {return(read.xlsx(paste(path_two,file_name,sep = "/")))}
+} 
 
 
 

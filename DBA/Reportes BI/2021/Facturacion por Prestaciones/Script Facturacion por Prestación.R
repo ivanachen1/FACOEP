@@ -1,5 +1,5 @@
 source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturacion por Prestaciones/FuncionesHelper.R")
-
+#source("E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Automatizado/FuncionesHelper.R")
  
 
 drv <- dbDriver("PostgreSQL")

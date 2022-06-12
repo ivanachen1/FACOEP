@@ -1,0 +1,71 @@
+Lo del 246 esta en comprobantes. El estado del valor falta nomas
+
+Tabla Comprobantes
+
+tipocomprobantecodigo
+comprobanteprefijo
+comprobantecodigo
+origen
+comprobanteimporte
+comprobantefechaemision
+comprobanteentidadcodigo = es el ID que hace referencia Ignacio
+
+
+Tabla Valores
+
+valorcmpprefijoentra = es el prefijo del recibo
+valortipomoventra = es el tipo de comprobante RECX2
+valorcodigoentra = es el codigo de comprobante
+
+valorimporte = es el importe del valor
+valornumero = es el numero del valor
+valorserie = es la serie del valor
+valorfechaemision = es la fecha de emision del valor
+valorfechavencimiento = es la fecha de vencimiento del valor
+valorlibrador = es el librador del valor
+valorlibradorctabncnum = es la cuenta bancaria del librador
+
+Joinear con tabla tipovalor con el campo tipovalorcodigo
+
+tipovalordescripcion = es el tipo de valor emitido
+
+Joinear con tabla banco
+valorbancocodigo = banco.bancocodigo
+
+bancodescripcion = es el nombre del banco del valor
+
+SELECT 
+c.comprobanteentidadcodigo as id,
+c.comprobantefechaemision as emision,
+c.tipocomprobantecodigo as tipo,
+c.comprobanteprefijo as prefijo,
+c.comprobantecodigo as numerorecibo,
+c.comprobantetotalimporte as importerecibo,
+c.comprobanteorigen as origen,
+c.ComprobanteEnviadoRes as enviado246,
+tipo.tipovalordescripcion as tipovalor,
+val.valorserie as serie,
+val.valornumero as numerovalor,
+banco.bancodescripcion as banco,
+val.valorlibradorctabncnum as numctecorriente,
+val.valorlibrador as librador,
+val.valorfechaemision as emisionvalor,
+val.valorfechavencimiento as vencimientovalor,
+val.valorimporte as importevalor
+
+
+
+FROM comprobantes as c
+LEFT JOIN valores as val
+ON val.valortipomoventra = c.tipocomprobantecodigo AND
+   val.valorcmpprefijoentra = c.comprobanteprefijo AND
+   val.valorcodigoentra = c.comprobantecodigo
+
+LEFT JOIN tipovalor as tipo 
+ON val.tipovalorcodigo = tipo.tipovalorcodigo
+
+LEFT JOIN banco
+ON val.valorbancocodigo = banco.bancocodigo
+
+
+

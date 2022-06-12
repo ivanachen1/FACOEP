@@ -1,35 +1,23 @@
-############################################ LIBRERIAS ########################################################
-library(data.table)
-library(tidyverse)
-library(stringr)
-library(openxlsx)
-library(scales)
-library(formattable)
-library(stringr)
-library(plyr)
-library(zoo)
-library("RPostgreSQL")
-library(lubridate)
-library(glue)
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Cobranza por Prestaciones"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Cobranza por Prestaciones"
 
-pw <- {"odoo"} 
-pw <- {"facoep2017"}
+Archivo <-"Funciones_Helper.R"
+
+source(paste(workdirectory,Archivo,sep = "/"))
+
+archivo_parametros <- GetArchivoParametros(path_one = workdirectory,
+                                           path_two = workdirectory,
+                                           file = "parametros_servidor.xlsx")
+
+database <- GetParameter(x = archivo_parametros,"database")
+pw <- GetParameter(x = archivo_parametros,"password")
+host <- GetParameter(x = archivo_parametros,"host")
+user <- GetParameter(x = archivo_parametros,"user")
+
 drv <- dbDriver("PostgreSQL")
-con <- dbConnect(drv, dbname = "Facoep",
-                 host = "10.22.0.142", port = 5432, 
-                 user = "postgres", password = "serveradmin")
-
-#con <- dbConnect(drv, dbname = "facoep",
-#                 host = "localhost", port = 5432, 
-#                 user = "odoo",password = pw)
-
-pathGrupoPrestaciones <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Cobranza por Prestaciones/Grupo Prestaciones.xlsx"
-PathOrigenes <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Cobranza por Prestaciones/Origen.xlsx"
-
-GrupoPrestaciones <- read.xlsx(pathGrupoPrestaciones)
-Origenes <- read.xlsx(PathOrigenes)
-
-#setwd("E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Automatizado/data")
+con <- dbConnect(drv, dbname = database,
+                 host = host, port = 5432, 
+                 user = user, password = pw)
 
 query <- glue(paste("SELECT",
               "pprnombre as Efector,",
@@ -80,20 +68,8 @@ query <- glue(paste("SELECT",
 
 data <- dbGetQuery(con,query)
 
-data$recibo <- gsub(" ","",data$recibo)
-data$prestacion <- ifelse(data$prestacion == "                    ",
-                          "Sin Definir",
-                          ifelse(is.na(data$prestacion),"Sin Definir",data$prestacion))
+data <- cleanData(data)
 
-data$prestacion <- gsub(" ","",data$prestacion)
-data$efector <- gsub(" ","",data$efector)
-
-
-data$TipoApertura <- ifelse(is.na(data$comprobantecrgnrocrg) & is.na(data$comprobantecrgnrocrg),
-                            "Sin Apertura",
-                            ifelse(!is.na(data$comprobantecrgnrocrg) & is.na(data$comprobantecrgdetnrocrg),
-                                   "Apertura Cabecera",
-                                   "Apertura Detalle"))
 
 RecibosConSinApertura <- unique(select(data,"Recibo" = recibo,
                                              "TipoApertura" = TipoApertura,
@@ -101,57 +77,11 @@ RecibosConSinApertura <- unique(select(data,"Recibo" = recibo,
                                              "ObraSocial" = os,
                                              "Origen" = origen))
 
-RecibosConSinApertura <- left_join(RecibosConSinApertura,Origenes,by = c('Origen' = 'Sigla'))
+data <- dataTransform(data)
 
 RecibosConSinApertura$ObraSocial <- ifelse(is.na(RecibosConSinApertura$ObraSocial),
                                            "Sin Asignar",
                                            RecibosConSinApertura$ObraSocial)
-
-data$cantidad <- 1
-
-
-data$emision <- as.Date(data$emision)
-
-data$comprobantecrgnro <- as.character(data$comprobantecrgnro)
-
-data$comprobantecrgnro <- ifelse(is.na(data$comprobantecrgnro),"Sin Asignar SIF",data$comprobantecrgnro)
-
-data$prestacion <- ifelse(is.na(data$prestacion),"Sin Asignar SIF",data$prestacion)
-
-data$importeprestacion <- ifelse(is.na(data$importeprestacion),0,data$importeprestacion)
-
-data$efector <- ifelse(is.na(data$efector),"Sin Asignar SIF",data$efector)
-
-data$os <- ifelse(is.na(data$os),"Sin Asignar SIF",data$os)
-
-data <- aggregate(.~efector+os+recibo+emision+comprobantecrgnro+prestacion+importeprestacion+centrocosto+TipoApertura+origen,
-          data, sum)
-
-data <- left_join(data,Origenes,by = c('origen' = 'Sigla'))
-
-data$idRow <- paste(data$efector,
-                    data$os,data$recibo,
-                    data$emision,
-                    data$comprobantecrgnro,
-                    data$prestacion,
-                    data$importeprestacion,
-                    data$centrocosto,
-                    data$TipoApertura,
-                    data$origen,
-                    data$comprobantecrgnrocrg,
-                    data$cantidad,
-                    data$Name,sep = "-")
-
-CentroCostos <- dbGetQuery(conn = con,"SELECT * FROM centrocostos")
-
-PrestacionesUnicas <- data.frame(select(data,"prestacion" = prestacion))
-
-PrestacionesUnicas$prestacion <- toupper(PrestacionesUnicas$prestacion) 
-
-PrestacionesUnicas <- unique(PrestacionesUnicas)
-  
-ft2 <- data.frame(table(PrestacionesUnicas$prestacion))
-
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
      
