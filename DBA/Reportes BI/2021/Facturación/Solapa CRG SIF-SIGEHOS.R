@@ -1,8 +1,8 @@
-workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
+workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/FacturaciÃ³n"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version4"
 
-workdirectory_three <- "C:/Users/iachenbach/Desktop/test"
-#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/repositorio SIGHEOS"
+workdirectory_three <- "C:/Users/Usuario/Desktop/otros/Test Sigehos"
+#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version 3/repositorio SIGHEOS"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -96,7 +96,7 @@ Sigehos <- select(Sigehos,
                   "Tipo De Anexo" = Tipo.Anexo,
                   "Estado Sigehos" = Estado,
                   "Estado SIF" = estado1,
-                  "Financiador" = Financiador,
+                  "Financiador" = Financiador.x,
                   "Importe Total" = Importe.Total,
                   "Tipo Cobertura" = Tipo.Cobertura,
                   "Anio" = Anio,
@@ -111,16 +111,17 @@ SigehosExcel <- select(SigehosExcel,
                        "Tipo Anexo" = Tipo.Anexo,
                        "Estado" = Estado,
                        "Cant DPHs" = Cant..DPHs,
-                       "Financiador" = Financiador,
+                       "Financiador" = Financiador.y,
                        "Tipo Cobertura" = Tipo.Cobertura,
                        "Anio" = Anio,
                        "Importe Total" = Importe.Total)
 
-FinanciadoresNoDefinidos <- filter(SigehosExcel,is.na(Financiador.y))
+FinanciadoresNoDefinidos <- filter(SigehosExcel,is.na(Financiador))
+
 FinanciadoresNoDefinidos <- unique(select(FinanciadoresNoDefinidos,
-                                   "Financiador" = Financiador.x))
+                                   "Financiador" = Financiador))
 
 write.xlsx(FinanciadoresNoDefinidos,"Financiadores Sin Definir.xlsx")
 
-write.csv(SigehosExcel,"Test.csv")
-convert_xls_as_xlsx(workdirectory_three,workdirectory)
+remove(archivo_parametros,con,drv,efectores,estados,FinanciadoresNoDefinidos,SigehosControl,Sigehos,TipoFinanciador,SIF)
+
