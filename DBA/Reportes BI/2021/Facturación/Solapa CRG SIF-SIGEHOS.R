@@ -123,5 +123,5 @@ FinanciadoresNoDefinidos <- unique(select(FinanciadoresNoDefinidos,
 
 write.xlsx(FinanciadoresNoDefinidos,"Financiadores Sin Definir.xlsx")
 
-remove(archivo_parametros,con,drv,efectores,estados,FinanciadoresNoDefinidos,SigehosControl,Sigehos,TipoFinanciador,SIF)
+remove(archivo_parametros,con,drv,efectores,estados,FinanciadoresNoDefinidos,SigehosControl,TipoFinanciador,SIF)
 

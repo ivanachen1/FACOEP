@@ -96,8 +96,12 @@ ReadSigehosData <- function(workdirectory,StartRow){
       EfectorName <- read.xlsx(xlsxFile = paste(workdirectory,
                                                 file_list[i],sep = "/"))
       EfectorName <- names(EfectorName)[[1]]
+      #print(EfectorName)
+      
       temp_data <- read.xlsx(xlsxFile = paste(workdirectory,file_list[i],sep = "/"),startRow = StartRow)
       temp_data$Efector <- EfectorName
+      temp_data$File <- file_list[[i]]
+      #print(file_list[[i]])
       dataset <- rbind(dataset, temp_data)}}
   
   #dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
@@ -120,5 +124,10 @@ SigehosFileControl <- function(DataFrameSigehos,DataframeEfectoresObjetivos,File
   
   return(Control)
   
+}
+
+SigehosCorrectDate <- function(dataframe){
+  dataframe$Fecha1 <-grepl("/",dataframe$Fecha)
+  return(dataframe)
 }
   
