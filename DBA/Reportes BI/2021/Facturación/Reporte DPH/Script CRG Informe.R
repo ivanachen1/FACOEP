@@ -1,9 +1,8 @@
 workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version4"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
 
 workdirectory_three <- "C:/Users/Usuario/Desktop/otros/Test Sigehos"
-#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version 3/repositorio SIGHEOS"
-
+#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/Repositorio SIGEHOS CRG Export/CRG ENERO A JUNIO INCLUIDO 2022"
 Archivo <-"Script_Facturacion_Funciones.R"
 
 source(paste(workdirectory,Archivo,sep = "/"))
@@ -23,6 +22,16 @@ TipoFinanciador <- GetFile("tipo_financiador.xlsx",
 
 SigehosCRG <- ReadSigehosData(workdirectory = workdirectory_three,
                            StartRow = 8)
+
+
+
+SigehosCRG$VerificadorImporte <- grepl(",",SigehosCRG$Importe.Total) 
+
+SigehosCRG$Importe_Total_1 <- ifelse(SigehosCRG$VerificadorImporte == TRUE,
+                                     SigehosCRG$Importe.Total,-1)
+
+SigehosCRG$Importe_Total_2 <- ifelse(SigehosCRG$VerificadorImporte == FALSE,
+                                     SigehosCRG$Importe.Total,-1)
 
 SigehosCRG <- unique(SigehosCRG)
 
@@ -52,22 +61,32 @@ SigehosCRG <- left_join(SigehosCRG,efectores,by = c("Efector" = "EfectorSigehos"
 SigehosCRG <- select(SigehosCRG,
                        "Efector" = EfectorObjetivos,
                        "Fecha" = Fecha,
-                       "Verificador" = Verificador,
+                       "VerificadorFecha" = Verificador,
                        "Fecha1" = Fecha1,
                        "Fecha2" = Fecha2,
                        "Numero" = Numero,
                        "Tipo Anexo" = Tipo.Anexo,
                        "Estado" = Estado,
                        "Cant DPHs" = Cant..DPHs,
-                       "Financiador" = Financiador.y,
+                       "Financiador" = Financiador.x,
+                       "FinanciadorJoin"= Financiador.y,
                        "Tipo Cobertura" = Tipo.Cobertura,
-                       "Importe Total" = Importe.Total)
+                       "VerificadorImporte" = VerificadorImporte,
+                       "ImporteTotal" = Importe.Total,
+                       "Importe_Total_1" = Importe_Total_1,
+                       "Importe_Total_2" = Importe_Total_2)
 
-FinanciadoresNoDefinidos <- filter(SigehosCRG,is.na(Financiador))
+SigehosCRG <- unique(SigehosCRG)
+
+FinanciadoresNoDefinidos <- filter(SigehosCRG,is.na(FinanciadorJoin))
 
 FinanciadoresNoDefinidos <- unique(select(FinanciadoresNoDefinidos,
-                                          "Financiador" = Financiador))
+                                          "Financiador" = FinanciadorJoin))
 
 #write.xlsx(FinanciadoresNoDefinidos,"Financiadores Sin Definir.xlsx")
 
 remove(efectores,estados,FinanciadoresNoDefinidos,TipoFinanciador)
+
+#mirar <- filter(SigehosCRG,Numero == 8250)
+#mirar$ImporteTotal<- as.numeric(mirar$ImporteTotal)
+
