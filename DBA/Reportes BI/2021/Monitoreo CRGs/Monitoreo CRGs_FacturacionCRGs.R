@@ -1,10 +1,11 @@
-source("C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Monitoreo CRGs/Script Nancy Logica.R")
+source("C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Monitoreo CRGs/Script Nancy Logica.R")
+#source("E:/Personales/Sistemas/Agustin/Reportes BI/2021/MonitoreoCRGs/Script Nancy Logica.R")
 
-path_one <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Monitoreo CRGs/"
+path_one <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Monitoreo CRGs"
+#path_one <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/MonitoreoCRGs"
 
-path_two <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/MonitoreoCRGs"
-
-archivo_parametros <- GetArchivoParametros(path_one = path_one,path_two = path_two)
+archivo_parametros <- GetArchivoParametros(path_one = path_one,
+                                           path_two = path_one)
 
 
 pw <- GetPassword(x = archivo_parametros)
@@ -113,8 +114,12 @@ CRGsFacturados$crgdetnumerocph <- as.character(CRGsFacturados$crgdetnumerocph)
 CRGsFacturados$nrocrg <- as.character(CRGsFacturados$nrocrg)
 CRGsFacturados$idcrgdet<- as.character(CRGsFacturados$idcrgdet)
 
-#CRGsFacturados$
-
+CRGsFacturados <- left_join(CRGsFacturados,
+                            PrestacionesNosumar,
+                            by = c('practica' = 'Prestacion'))
+CRGsFacturados$Sumar <- ifelse(is.na(CRGsFacturados$Sumar),
+                               TRUE,
+                               FALSE)
 
 CRGsFacturados <- select(CRGsFacturados,
                             "Efector" = efector,
@@ -129,10 +134,8 @@ CRGsFacturados <- select(CRGsFacturados,
                             "Fecha Emision CRG" = emisioncrg,
                             "ImporteCRG" = importecrg,
                             "Id_Test" = id_test,
-                            "Id_Detalle" = id_detalle)
-
-
-#Cierra todo
+                            "Id_Detalle" = id_detalle,
+                            "Sumar" = Sumar)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 rm(archivo_parametros,con,drv,PrestacionesNosumar,GrupoPrestaciones)

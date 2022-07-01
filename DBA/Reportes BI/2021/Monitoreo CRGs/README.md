@@ -31,3 +31,8 @@ El Script que contiene esta logica es Monitoreo CRGs_CRGPorEstadosSuma.R
 Esta tabla muestra el detalle de todo el CRG y matchea con la tabla CRGEstadosSuma mediante la tabla Universo.
 Esta tabla lo unico que contempla es que el CRG, el DPH y el Efector del detalle del CRG contenga al menos un codigo
 de prestacion de los definidos en el archivo Prestaciones Nancy.
+
+### Tabla CRGFacturados
+
+Esta tabla muestra el detalle de todos los CRGs en estado Facturado(ID = 4) y utiliza la tabla universo para filtrar
+los CRGs a monitorear de interes. El Script Joinea esta tabla con Prestaciones no sumar para excluir los INC.

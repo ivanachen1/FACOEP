@@ -1,2 +1,5 @@
-﻿Efector,Fecha,Numero,Tipo Anexo,Estado,Cant DPHs,Financiador,FinanciadorJoin,Importe Total,Tipo Cobertura
-María Ferrer,2022-05-18 00:00:00,11236,Ambulatorio,Facturado,2,'- CAJA DE PREV. SOCIAL DE PROF. DE ING. DE SANTA FE,,10498,
+﻿Efector,Fecha,Numero,Tipo Anexo,Estado,Cant DPHs,Financiador,FinanciadorJoin,Tipo Cobertura,Importe Total
+María Ferrer,2021-02-25 00:00:00,7575,Ambulatorio,Facturado,1,Galeno ART - GALENO ASEGURADORA DE RIESGOS DEL TRABAJO SOCIEDAD ANONIMA,,,$ 530
+Alvarez,2021-06-24 00:00:00,17594,Ambulatorio,Facturado,1,'- UNIDAD DE GESTIO OPERATIVA FERROVIARIA DE EMERGENC,,,$ 5524
+Quemados,2021-08-18 00:00:00,15738,Ambulatorio,Facturado,1,MERCANTIL ANDIN - COMPAÑÍA DE SEGUROS LA MERCANTIL ANDINA S.A.,,,$ 15879
+Pirovano,2021-11-10 00:00:00,21291,Ambulatorio,Facturado,1,MERCANTIL ANDIN - COMPAÑÍA DE SEGUROS LA MERCANTIL ANDINA S.A.,,,$ 17821
