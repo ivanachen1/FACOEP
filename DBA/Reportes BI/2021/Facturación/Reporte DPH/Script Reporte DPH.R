@@ -1,7 +1,7 @@
 workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación"
 #workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
 
-workdirectory_three <- "C:/Users/Usuario/Desktop/otros/Test DPH"
+workdirectory_three <- "C:/Users/Usuario/Desktop/otros/EXPORT DPH ENERO A DICIEMBRE 2021"
 #workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/Repositorio SIGEHOS CRG Export/CRG ENERO A JUNIO INCLUIDO 2022"
 Archivo <-"Script_Facturacion_Funciones.R"
 

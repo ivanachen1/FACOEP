@@ -1,7 +1,7 @@
 workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación"
 #workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
 
-workdirectory_three <- "C:/Users/Usuario/Desktop/otros/Test Sigehos"
+workdirectory_three <- "C:/Users/Usuario/Desktop/otros/EXPORT CRG ENERO A DICIEMBRE 2021"
 #workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/Repositorio SIGEHOS CRG Export/CRG ENERO A JUNIO INCLUIDO 2022"
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -45,8 +45,11 @@ SigehosCRG$Fecha1 <- ifelse(SigehosCRG$Verificador == FALSE,
                             SigehosCRG$Fecha2 <- as.numeric(SigehosCRG$Fecha),
                             SigehosCRG$Fecha)
 
-SigehosCRG$Fecha2 <- as.Date(SigehosCRG$Fecha2,origin = "1899-12-30")
-
+if("Fecha2" %in% colnames(SigehosCRG)){
+  SigehosCRG$Fecha2 <- as.Date(SigehosCRG$Fecha2,origin = "1899-12-30")
+} else {
+  SigehosCRG$Fecha2 <- -1
+}
 
 SigehosCRGControl <- SigehosFileControl(SigehosCRG,efectores,FileName = "Control-Sigehos.xlsx")
 
@@ -89,4 +92,6 @@ remove(efectores,estados,FinanciadoresNoDefinidos,TipoFinanciador)
 
 #mirar <- filter(SigehosCRG,Numero == 8250)
 #mirar$ImporteTotal<- as.numeric(mirar$ImporteTotal)
+
+
 

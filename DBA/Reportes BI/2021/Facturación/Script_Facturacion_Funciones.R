@@ -82,31 +82,34 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
 
 ReadSigehosData <- function(workdirectory,StartRow){
 
-  file_list <- list.files(path=workdirectory)
   dataset <- data.frame()
-  print(file_list)
+  folder_list <- list.dirs(path = workdirectory,
+                           full.names = TRUE,
+                           recursive = TRUE)
   
-  correct_format <- ".xlsx"
-  
-  for (i in 1:length(file_list)){
-    
-    correct_format <- ".xlsx" 
-    
-    if(str_detect(file_list[i],correct_format) == TRUE){
-      EfectorName <- read.xlsx(xlsxFile = paste(workdirectory,
-                                                file_list[i],sep = "/"))
-      EfectorName <- names(EfectorName)[[1]]
-      #print(EfectorName)
+  for(i in 1:length(folder_list)){
+    if(i != 1){
       
-      temp_data <- read.xlsx(xlsxFile = paste(workdirectory,file_list[i],sep = "/"),startRow = StartRow)
-      temp_data$Efector <- EfectorName
-      temp_data$File <- file_list[[i]]
-      #print(file_list[[i]])
-      dataset <- rbind(dataset, temp_data)}}
-  
-  #dataset$Fecha <- as.Date(dataset$Fecha, origin = "1899-12-30")
-  
-  return(dataset)}
+      file_list <- list.files(path=folder_list[i])
+      correct_format <- ".xlsx"
+      
+      for (t in 1:length(file_list)){
+        
+        if(str_detect(file_list[t],correct_format) == TRUE){
+          
+          EfectorName <- read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"))
+          EfectorName <- names(EfectorName)[[1]]
+      
+          temp_data <- read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"),startRow = StartRow)
+          temp_data$Efector <- EfectorName
+          temp_data$File <- file_list[[t]]
+          #print(file_list[[i]])
+          dataset <- rbind(dataset, temp_data)}}
+      }
+    
+    }
+  return(dataset)
+  }
 
 SigehosFileControl <- function(DataFrameSigehos,DataframeEfectoresObjetivos,FileName){
   SigehosControl <- data.frame("EfectorSigehos" = unique(DataFrameSigehos$Efector))
