@@ -12,11 +12,7 @@ library(lubridate)
 library("RPostgreSQL")
 library(BBmisc)
 library(glue)
-library(readxl)
-#library(reader)
 library(stringr)
-#library(kwb.geosalz)
-
 
 
 
@@ -56,7 +52,7 @@ GetListaINSQL<- function(archivo,print = FALSE){
   ifelse(print == TRUE,print(archivo),return(archivo))
   
 }
-  
+
 TransFormTablaApertura <- function(archivo,print = FALSE){
   archivo <- archivo$idApertura
   archivo <- unique(archivo)
@@ -81,7 +77,7 @@ CleanTablaComprobantes <- function(tabla_comprobantes){
 }
 
 ReadSigehosData <- function(workdirectory,StartRow){
-
+  
   dataset <- data.frame()
   folder_list <- list.dirs(path = workdirectory,
                            full.names = TRUE,
@@ -99,24 +95,26 @@ ReadSigehosData <- function(workdirectory,StartRow){
           
           EfectorName <- read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"))
           EfectorName <- names(EfectorName)[[1]]
-      
-          temp_data <- read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"),startRow = StartRow)
+          
+          temp_data <- read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"),
+                                 startRow =  StartRow)
+          
           temp_data$Efector <- EfectorName
           temp_data$File <- file_list[[t]]
           #print(file_list[[i]])
           dataset <- rbind(dataset, temp_data)}}
-      }
-    
     }
-  return(dataset)
+    
   }
+  return(dataset)
+}
 
 SigehosFileControl <- function(DataFrameSigehos,DataframeEfectoresObjetivos,FileName){
   SigehosControl <- data.frame("EfectorSigehos" = unique(DataFrameSigehos$Efector))
   Control <- left_join(SigehosControl,DataframeEfectoresObjetivos,
                        by= c("EfectorSigehos" = "EfectorSigehos"),
                        keep = TRUE)
-
+  
   Control <- select(Control,"EfectorSigehos" = EfectorSigehos.x,
                     "EfectorSigehosExcel" = EfectorSigehos.y,
                     "ID" = ID,
@@ -133,4 +131,38 @@ SigehosCorrectDate <- function(dataframe){
   dataframe$Fecha1 <-grepl("/",dataframe$Fecha)
   return(dataframe)
 }
+
+ReadSigehosData1 <- function(workdirectory,StartRow){
   
+  dataset <- data.frame()
+  folder_list <- list.dirs(path = workdirectory,
+                           full.names = TRUE,
+                           recursive = TRUE)
+  
+  for(i in 1:length(folder_list)){
+    if(i != 1){
+      
+      file_list <- list.files(path=folder_list[i])
+      correct_format <- ".xlsx"
+      
+      for (t in 1:length(file_list)){
+        
+        if(str_detect(file_list[t],correct_format) == TRUE){
+          
+          EfectorName <- xlsx::read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"))
+          EfectorName <- names(EfectorName)[[1]]
+          
+          temp_data <- xlsx::read.xlsx(xlsxFile = paste(folder_list[i],file_list[t],sep = "/"),
+                                 sheetIndex =  StartRow,encoding = 'windows-1252')
+          
+          temp_data$Efector <- EfectorName
+          temp_data$File <- file_list[[t]]
+          #print(file_list[[i]])
+          dataset <- rbind(dataset, temp_data)}}
+    }
+    
+  }
+  return(dataset)
+}
+
+

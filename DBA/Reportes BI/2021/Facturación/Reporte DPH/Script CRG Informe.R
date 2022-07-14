@@ -1,8 +1,8 @@
-workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturaci贸n"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci贸n/Informe_Sigehos_CRG"
+workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturaci髇"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci髇/Informe_Sigehos_CRG"
 
 workdirectory_three <- "C:/Users/Usuario/Desktop/otros/EXPORT CRG ENERO A DICIEMBRE 2021"
-#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci贸n/Version 3/Repositorio SIGEHOS CRG Export/CRG ENERO A JUNIO INCLUIDO 2022"
+#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci髇/Version 3/Repositorio SIGEHOS CRG Export"
 Archivo <-"Script_Facturacion_Funciones.R"
 
 source(paste(workdirectory,Archivo,sep = "/"))
@@ -22,6 +22,15 @@ TipoFinanciador <- GetFile("tipo_financiador.xlsx",
 
 SigehosCRG <- ReadSigehosData(workdirectory = workdirectory_three,
                            StartRow = 8)
+
+SigehosCRG$Financiador <- gsub('Asociaci贸n','Asociaci髇',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('M茅dica','M閐ica',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('COMPA脩IA','COMPA袸A',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('ORGANIZACI脫N','ORGANIZACI覰',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('DESEMPE脩O','DESEMPE袿',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('PEQUE脩A','PEQUE袮',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('Porte帽a','Porte馻',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('COMPA脩脥A','COMPA袸A',SigehosCRG$Financiador)
 
 
 
@@ -73,6 +82,7 @@ SigehosCRG <- select(SigehosCRG,
                        "Cant DPHs" = Cant..DPHs,
                        "Financiador" = Financiador.x,
                        "FinanciadorJoin"= Financiador.y,
+                       "FinanciadorBienNombrado" = FinanciadorBienNombrado,
                        "Tipo Cobertura" = Tipo.Cobertura,
                        "VerificadorImporte" = VerificadorImporte,
                        "ImporteTotal" = Importe.Total,

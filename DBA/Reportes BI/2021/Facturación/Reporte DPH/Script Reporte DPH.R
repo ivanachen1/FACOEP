@@ -1,10 +1,9 @@
-workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturaci贸n"
+workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturaci髇"
 #workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci贸n/Informe_Sigehos_CRG"
 
 workdirectory_three <- "C:/Users/Usuario/Desktop/otros/EXPORT DPH ENERO A DICIEMBRE 2021"
-#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci贸n/Version 3/Repositorio SIGEHOS CRG Export/CRG ENERO A JUNIO INCLUIDO 2022"
+#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci贸n/Version 3/Repositorio SIGEHOS DPH Export"
 Archivo <-"Script_Facturacion_Funciones.R"
-
 source(paste(workdirectory,Archivo,sep = "/"))
 
 estados  <- GetFile("crg_estados.xlsx",
@@ -24,6 +23,15 @@ SigehosDPH <- ReadSigehosData(workdirectory = workdirectory_three,
                               StartRow = 8)
 
 
+
+SigehosDPH$Financiador <- gsub('Asociaci贸n','Asociaci髇',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('M茅dica','M閐ica',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('COMPA脩IA','COMPA袸A',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('ORGANIZACI脫N','ORGANIZACI覰',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('DESEMPE脩O','DESEMPE袿',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('PEQUE脩A','PEQUE袮',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('Porte帽a','Porte馻',SigehosDPH$Financiador)
+SigehosDPH$Financiador <- gsub('COMPA脩脥A','COMPA袸A',SigehosDPH$Financiador)
 
 SigehosDPH$VerificadorImporte <- grepl(",",SigehosDPH$Importe.Total) 
 
@@ -60,6 +68,8 @@ SigehosDPHControl <- SigehosFileControl(SigehosDPH,efectores,FileName = "Control
 SigehosDPH <- left_join(SigehosDPH,efectores,by = c("Efector" = "EfectorSigehos"),
                         keep = FALSE)
 
+
+
 SigehosDPH <- select(SigehosDPH,
                      "Efector" = EfectorObjetivos,
                      "Fecha" = Fecha,
@@ -72,6 +82,7 @@ SigehosDPH <- select(SigehosDPH,
                      "EstadoDPH" = Estado,
                      "Financiador" = Financiador.x,
                      "FinanciadorJoin"= Financiador.y,
+                     "FinanciadorBienNombrado" = FinanciadorBienNombrado,
                      "Paciente" = Paciente,
                      "HistClinica" = Hist..Clin.,
                      "Fecha Egreso" = Fecha.egreso,
