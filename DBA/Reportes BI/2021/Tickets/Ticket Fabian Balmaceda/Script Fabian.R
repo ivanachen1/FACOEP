@@ -69,7 +69,7 @@ Query <- paste("with recibos as (SELECT",
                 
                 "FROM comprobantes c",
                 "LEFT JOIN centrocostos cc ON c.comprobanteccosto = cc.ccostocodigo",
-                "WHERE tipocomprobantecodigo LIKE '%FAC%' OR tipocomprobantecodigo LIKE '%ND%')",
+                "WHERE tipocomprobantecodigo LIKE '%FAC%' OR tipocomprobantecodigo LIKE '%ND%' OR tipocomprobantecodigo LIKE '%FAEC%')",
               
                 "SELECT",
                 "recibos.*,",
@@ -79,7 +79,7 @@ Query <- paste("with recibos as (SELECT",
                 "imputaciones.numeroimp,",
                 "imputaciones.centroimp,",
                 "imputaciones.asientoimp,",
-                "CASE WHEN comprobanteimputaciontipo LIKE '%FAC%' THEN comprobanteimputacionimporte ELSE 0 END AS Capital,",
+                "CASE WHEN comprobanteimputaciontipo LIKE '%FAC%' THEN comprobanteimputacionimporte WHEN comprobanteimputaciontipo LIKE '%FAEC%' THEN comprobanteimputacionimporte ELSE 0 END AS Capital,",
                 "CASE WHEN comprobanteimputaciontipo LIKE '%ND%' THEN comprobanteimputacionimporte ELSE 0 END AS Interes,",
                 "imputaciones.origen",
                 
