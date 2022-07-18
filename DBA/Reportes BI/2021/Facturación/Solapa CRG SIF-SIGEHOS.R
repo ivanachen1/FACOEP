@@ -1,8 +1,12 @@
-workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version4"
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturaci?n"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
 
-workdirectory_three <- "C:/Users/Usuario/Desktop/otros/Test Sigehos"
-#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version 3/repositorio SIGHEOS"
+#workdirectory_three <- "C:/Users/iachenbach/Desktop/repositorio sigehos"
+workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/repositorio SIGHEOS"
+
+workdirectory_four <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/Repositorio SIGEHOS CRG Export"
+
+workdirectory_five <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -28,7 +32,7 @@ host <- GetParameter(x = archivo_parametros,
 database <- GetParameter(x = archivo_parametros,
                          parameter = "database")
 
-con <- dbConnect(drv, dbname = database, 
+con <- dbConnect(drv, dbname = database,
                  host = host,
                  port = 5432,
                  user = user,
@@ -41,39 +45,46 @@ estados  <- GetFile("crg_estados.xlsx",
                           path_one = workdirectory,
                           path_two = workdirectory)
 
-efectores  <- GetFile("EfectoresObjetivos.xlsx",
+efectores  <- GetFile("EfectoresObjetivosNew.xlsx",
                     path_one = workdirectory,
                     path_two = workdirectory)
 
-TipoFinanciador <- GetFile("tipo_financiador.xlsx",
-                           path_one = workdirectory,
-                           path_two = workdirectory)
 
+Sigehos <- ReadSigehosDataNew(workdirectory = workdirectory_four,
+                              StartRow = 8)
 
-Sigehos <- ReadSigehosData(workdirectory = workdirectory_three,
-                           StartRow = 11)
+Sigehos <- unique(Sigehos)
+
+Sigehos$VerificadorImporte <- grepl(",",Sigehos$Importe.Total)
+
+Sigehos$Importe_Total_1 <- ifelse(Sigehos$VerificadorImporte == TRUE,
+                                     Sigehos$Importe.Total,-1)
+
+Sigehos$Importe_Total_2 <- ifelse(Sigehos$VerificadorImporte == FALSE,
+                                     Sigehos$Importe.Total,-1)
 
 Sigehos <- unique(Sigehos)
 
 Sigehos <- filter(Sigehos,!(is.na(Numero)))
 
-Sigehos <- left_join(Sigehos,TipoFinanciador,by = c('Financiador' = 'Financiador'),keep = TRUE)
+Sigehos$Verificador <-grepl("/",Sigehos$Fecha)
 
-SigehosControl <- SigehosFileControl(Sigehos,efectores,FileName = "Control-Sigehos.xlsx")
+Sigehos$Fecha1 <- ifelse(Sigehos$Verificador == FALSE,
+                            Sigehos$Fecha2 <- as.numeric(Sigehos$Fecha),
+                            Sigehos$Fecha)
 
-Sigehos$Fecha <- as.numeric(Sigehos$Fecha)
-Sigehos$Fecha <- as.Date(Sigehos$Fecha,origin = "1899-12-30")
-Sigehos$Anio <- year(Sigehos$Fecha)
+if("Fecha2" %in% colnames(Sigehos)){
+  Sigehos$Fecha2 <- as.Date(Sigehos$Fecha2,origin = "1899-12-30")
+} else {
+  Sigehos$Fecha2 <- -1
+}
 
-Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"),
-                     keep = FALSE)
+#SigehosControl <- SigehosFileControl(Sigehos,efectores,FileName = "Control-Sigehos1.xlsx")
 
-SigehosExcel <- Sigehos
+Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"))
 
 
 Sigehos$IdSIF <- paste(Sigehos$ID,Sigehos$Numero,sep = "-")
-
-Sigehos$sif <- NULL
 
 
 SIF <- dbGetQuery(con, "SELECT pprid, crgnum, crgfchemision,crgestado
@@ -89,39 +100,30 @@ Sigehos <- left_join(Sigehos,SIF,by = c("IdSIF" = "ID"))
 
 Sigehos$estado1 <- ifelse(is.na(Sigehos$estado),"NO INGRESADO",Sigehos$estado)
 
+Financiador <- GetFile("tipo_financiador.xlsx",
+                       path_one = workdirectory_five,
+                       path_two = workdirectory_five)
+
+Sigehos <- left_join(Sigehos,Financiador,by = c('Financiador' = 'Financiador'))
+
 Sigehos <- select(Sigehos,
                   "Efector" = EfectorObjetivos,
                   "Fecha" = Fecha,
+                  "Fecha1" = Fecha1,
+                  "Fecha2" = Fecha2,
                   "Numero" = Numero,
                   "Tipo De Anexo" = Tipo.Anexo,
                   "Estado Sigehos" = Estado,
                   "Estado SIF" = estado1,
-                  "Financiador" = Financiador.x,
+                  "Financiador" = Financiador,
                   "Importe Total" = Importe.Total,
+                  "Importe_Total_1" = Importe_Total_1,
+                  "Importe_Total_2" = Importe_Total_2,
                   "Tipo Cobertura" = Tipo.Cobertura,
-                  "Anio" = Anio,
-                  "Fecha Emision CRG" = crgfchemision)
+                  "Fecha Emision CRG" = crgfchemision,
+                  "VerificadorImporte" = VerificadorImporte,
+                  "VerificadorFecha" = Verificador)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 
-SigehosExcel <- select(SigehosExcel,
-                       "Efector" = EfectorObjetivos,
-                       "Fecha" = Fecha,
-                       "Numero" = Numero,
-                       "Tipo Anexo" = Tipo.Anexo,
-                       "Estado" = Estado,
-                       "Cant DPHs" = Cant..DPHs,
-                       "Financiador" = Financiador.y,
-                       "Tipo Cobertura" = Tipo.Cobertura,
-                       "Anio" = Anio,
-                       "Importe Total" = Importe.Total)
-
-FinanciadoresNoDefinidos <- filter(SigehosExcel,is.na(Financiador))
-
-FinanciadoresNoDefinidos <- unique(select(FinanciadoresNoDefinidos,
-                                   "Financiador" = Financiador))
-
-write.xlsx(FinanciadoresNoDefinidos,"Financiadores Sin Definir.xlsx")
-
-remove(archivo_parametros,con,drv,efectores,estados,FinanciadoresNoDefinidos,SigehosControl,TipoFinanciador,SIF)
-
+remove(efectores,estados,Financiador,SIF,drv,con,archivo_parametros)

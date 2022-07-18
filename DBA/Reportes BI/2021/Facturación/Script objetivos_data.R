@@ -1,5 +1,5 @@
-#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturación"
-workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
+#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturaci?n"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/FacturaciÃ³n/Version4"
 
 
 Archivo <-"Script_Facturacion_Funciones.R"
@@ -19,7 +19,7 @@ tipo_comprobantes <- select(tipo_comprobantes,
                             "TipoComprobante" = Tipo.Comprobante,
                             "SIF2" = Alimenta.a.SIF2)
 
-Efectores <- GetFile("EfectoresObjetivos.xlsx",
+Efectores <- GetFile("EfectoresObjetivosNew.xlsx",
                              path_one = workdirectory,
                              path_two = workdirectory)
 
@@ -73,7 +73,7 @@ host <- GetParameter(x = archivo_parametros,parameter = "host")
 
 database <- GetParameter(x = archivo_parametros,parameter = "database")
 
-con <- dbConnect(drv, dbname = database, 
+con <- dbConnect(drv, dbname = database,
                  host = host,
                  port = 5432,
                  user = user,
@@ -102,10 +102,10 @@ SIF2Query <- glue(paste("SELECT pprnombre,",
                         "crg.comprobantetipoentidad = c.comprobantetipoentidad AND",
                         "crg.comprobantecodigo = c.comprobantecodigo AND",
                         "crg.comprobanteentidadcodigo = c.comprobanteentidadcodigo",
-    
+
                         "LEFT JOIN clientes os ON os.clienteid = c.comprobanteentidadcodigo",
                         "LEFT JOIN proveedorprestador pp on pp.pprid = crg.comprobantepprid",
-                                    
+
                         "WHERE c.comprobantetipoentidad = 2 and comprobantepprid > 0 and",
                         "c.tipocomprobantecodigo IN({comprobantes_query})",
                         "AND c.comprobanteccosto = 5"),sep = "\n")
@@ -148,7 +148,7 @@ colnames(SIF2) <- c("Efector","Anio","MostrarGrafico","Total.Facturado")
 
 SIF2$Fk <- paste(SIF2$Anio,SIF2$Efector,sep = "-")
 
-ObjetivosData$fk <- paste(ObjetivosData$Año,ObjetivosData$Efector,sep = "-")
+ObjetivosData$fk <- paste(ObjetivosData$AÃ±o,ObjetivosData$Efector,sep = "-")
 
 ObjetivosData <- left_join(ObjetivosData,SIF2,by = c("fk"="Fk"))
 
@@ -158,7 +158,7 @@ ObjetivosData <- select(ObjetivosData,
                         "Objetivo.Anual.Total" = Objetivo.Anual.Total,
                         "Objetivo.Mensual.OOSS" = Objetivo.Mensual.OOSS,
                         "Objetivo.Anual.PAMI"= Objetivo.Anual.PAMI,
-                        "Año" = Año,
+                        "AÃ±o" = AÃ±o,
                         "SIF.Total.Facturado" = Total.Facturado,
                         "MostrarGrafico" = MostrarGrafico,
                         "fk" = fk)
