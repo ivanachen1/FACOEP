@@ -1,8 +1,8 @@
-workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación"
-#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
+workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/FacturaciÃ³n"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Informe_Sigehos_CRG"
 
 workdirectory_three <- "C:/Users/Usuario/Desktop/otros/EXPORT CRG ENERO A DICIEMBRE 2021"
-#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/Repositorio SIGEHOS CRG Export"
+#workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturaci?n/Version 3/Repositorio SIGEHOS CRG Export"
 Archivo <-"Script_Facturacion_Funciones.R"
 
 source(paste(workdirectory,Archivo,sep = "/"))
@@ -23,14 +23,14 @@ TipoFinanciador <- GetFile("tipo_financiador.xlsx",
 SigehosCRG <- ReadSigehosData(workdirectory = workdirectory_three,
                            StartRow = 8)
 
-SigehosCRG$Financiador <- gsub('AsociaciÃ³n','Asociación',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('MÃ©dica','Médica',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('COMPAÃ‘IA','COMPAÑIA',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('ORGANIZACIÃ“N','ORGANIZACIÓN',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('DESEMPEÃ‘O','DESEMPEÑO',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('PEQUEÃ‘A','PEQUEÑA',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('PorteÃ±a','Porteña',SigehosCRG$Financiador)
-SigehosCRG$Financiador <- gsub('COMPAÃ‘ÃA','COMPAÑIA',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('AsociaciÃ³n','Asociaci?n',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('MÃ©dica','M?dica',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('COMPAÃ‘IA','COMPA?IA',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('ORGANIZACIÃ“N','ORGANIZACI?N',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('DESEMPEÃ‘O','DESEMPE?O',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('PEQUEÃ‘A','PEQUE?A',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('PorteÃ±a','Porte?a',SigehosCRG$Financiador)
+SigehosCRG$Financiador <- gsub('COMPAÃ‘ÃA','COMPA?IA',SigehosCRG$Financiador)
 
 
 
