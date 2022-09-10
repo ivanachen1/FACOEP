@@ -27,6 +27,30 @@ record = ""
 record2 = ""
 
 def get_MySql_DataFrame(text_query,list_columns,connection,cursor,cursor2,text_database):
+    """
+    
+
+    Parameters
+    ----------
+    text_query : Query to execute in format text
+        DESCRIPTION.
+    list_columns : Array of columns
+        Columns use to build dataframe.
+    connection : connection object
+        is the MySql connection object.
+    cursor : cursor
+        Is the Query cursor object.
+    cursor2 : Cursor
+        is the second cursor. Is use to create the query. The first one
+        is use to set database
+    text_database : Text
+        is the database name to execute the query.
+
+    Returns
+    -------
+    Dataframe Object or print.
+
+    """
     global record
     if connection.is_connected():
         cursor.execute('USE {};'.format(text_database))
