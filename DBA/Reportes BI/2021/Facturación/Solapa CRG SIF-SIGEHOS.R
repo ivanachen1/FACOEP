@@ -1,12 +1,12 @@
-#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturaci?n"
-workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
+# Cambie EfectoresObjetivosNew,Databases
 
-#workdirectory_three <- "C:/Users/iachenbach/Desktop/repositorio sigehos"
-workdirectory_three <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/repositorio SIGHEOS"
+workdirectory <-"C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version4"
 
-workdirectory_four <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Version 3/Repositorio SIGEHOS CRG Export"
 
-workdirectory_five <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
+
+workdirectory_Financiadores <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturación/Nuevo Informe CRG"
+#workdirectory_Financiadores <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Facturación/Informe_Sigehos_CRG"
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -38,6 +38,12 @@ con <- dbConnect(drv, dbname = database,
                  user = user,
                  password = pw)
 
+conSigehosData <- dbConnect(drv, dbname = 'sigehos_recupero',
+                            host = '172.31.24.12',
+                            port = 5432,
+                            user = 'postgres',
+                            password = 'facoep2017') 
+
 
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
@@ -50,41 +56,17 @@ efectores  <- GetFile("EfectoresObjetivosNew.xlsx",
                     path_two = workdirectory)
 
 
-Sigehos <- ReadSigehosDataNew(workdirectory = workdirectory_four,
-                              StartRow = 8)
+Sigehos <- dbGetQuery(conSigehosData,'SELECT * FROM crg_recupero')
 
-Sigehos <- unique(Sigehos)
+SigehosDatabases <- GetFile("databases.xlsx",
+                            path_one = workdirectory,
+                            path_two = workdirectory)
 
-Sigehos$VerificadorImporte <- grepl(",",Sigehos$Importe.Total)
+Sigehos <- left_join(Sigehos,SigehosDatabases,by = c("origin" = "database"))
 
-Sigehos$Importe_Total_1 <- ifelse(Sigehos$VerificadorImporte == TRUE,
-                                     Sigehos$Importe.Total,-1)
+Sigehos <- left_join(Sigehos,efectores,by = c("Efector.Facoep" = "EfectorObjetivos"))
 
-Sigehos$Importe_Total_2 <- ifelse(Sigehos$VerificadorImporte == FALSE,
-                                     Sigehos$Importe.Total,-1)
-
-Sigehos <- unique(Sigehos)
-
-Sigehos <- filter(Sigehos,!(is.na(Numero)))
-
-Sigehos$Verificador <-grepl("/",Sigehos$Fecha)
-
-Sigehos$Fecha1 <- ifelse(Sigehos$Verificador == FALSE,
-                            Sigehos$Fecha2 <- as.numeric(Sigehos$Fecha),
-                            Sigehos$Fecha)
-
-if("Fecha2" %in% colnames(Sigehos)){
-  Sigehos$Fecha2 <- as.Date(Sigehos$Fecha2,origin = "1899-12-30")
-} else {
-  Sigehos$Fecha2 <- -1
-}
-
-#SigehosControl <- SigehosFileControl(Sigehos,efectores,FileName = "Control-Sigehos1.xlsx")
-
-Sigehos <- left_join(Sigehos,efectores,by = c("Efector" = "EfectorSigehos"))
-
-
-Sigehos$IdSIF <- paste(Sigehos$ID,Sigehos$Numero,sep = "-")
+Sigehos$IdSIF <- paste(Sigehos$ID,Sigehos$numero,sep = "-")
 
 
 SIF <- dbGetQuery(con, "SELECT pprid, crgnum, crgfchemision,crgestado
@@ -98,32 +80,31 @@ SIF$crgestado <- NULL
 
 Sigehos <- left_join(Sigehos,SIF,by = c("IdSIF" = "ID"))
 
-Sigehos$estado1 <- ifelse(is.na(Sigehos$estado),"NO INGRESADO",Sigehos$estado)
 
-Financiador <- GetFile("tipo_financiador.xlsx",
-                       path_one = workdirectory_five,
-                       path_two = workdirectory_five)
+Sigehos$estado1 <- ifelse(is.na(Sigehos$estado.y),"NO INGRESADO",Sigehos$estado.x)
 
-Sigehos <- left_join(Sigehos,Financiador,by = c('Financiador' = 'Financiador'))
+# Seguir Aca
+
+Financiador <- GetFile("Financiadores.xlsx",
+                       path_one = workdirectory_Financiadores,
+                       path_two = workdirectory_Financiadores)
+
+Sigehos <- left_join(Sigehos,Financiador,by = c('financiador_nombre' = 'Financiador'))
 
 Sigehos <- select(Sigehos,
-                  "Efector" = EfectorObjetivos,
-                  "Fecha" = Fecha,
-                  "Fecha1" = Fecha1,
-                  "Fecha2" = Fecha2,
-                  "Numero" = Numero,
-                  "Tipo De Anexo" = Tipo.Anexo,
-                  "Estado Sigehos" = Estado,
+                  "Efector" = Efector.Facoep,
+                  "Fecha" = fecha,
+                  "Numero" = numero,
+                  "Tipo De Anexo" = tipo_anexo,
+                  "Estado Sigehos" = estado.x,
                   "Estado SIF" = estado1,
-                  "Financiador" = Financiador,
-                  "Importe Total" = Importe.Total,
-                  "Importe_Total_1" = Importe_Total_1,
-                  "Importe_Total_2" = Importe_Total_2,
+                  "Financiador" = financiador_nombre,
+                  "Financiador Sigla" = financiador_sigla,
+                  "Importe Total" = importe_total,
                   "Tipo Cobertura" = Tipo.Cobertura,
-                  "Fecha Emision CRG" = crgfchemision,
-                  "VerificadorImporte" = VerificadorImporte,
-                  "VerificadorFecha" = Verificador)
+                  "Fecha Emision CRG" = crgfchemision)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 
-remove(efectores,estados,Financiador,SIF,drv,con,archivo_parametros)
+remove(efectores,estados,Financiador,SIF,drv,con,archivo_parametros,
+       SigehosDatabases,conSigehosData)
