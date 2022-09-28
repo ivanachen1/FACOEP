@@ -30,9 +30,9 @@ con <- dbConnect(drv, dbname = database,
 postgresqlpqExec(con, "SET client_encoding = 'windows-1252'")
 
 
-Query <- "SELECT * FROM dph_recupero"
+Query <- "SELECT * FROM anexos_recupero"
 
-DPH <- dbGetQuery(con,Query)
+anexosDF <- dbGetQuery(con,Query)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
 
