@@ -106,13 +106,14 @@ Matriz$porcentaje_cliente <- Matriz$Facturacion_Neta_Cliente / Matriz$Facturacio
 
 Matriz$porcentaje_facturado_acumulado <- cumsum(Matriz$porcentaje_cliente)
 
-Matriz$porcentaje_cobrado_cliente <- Matriz$importe_recibos / Matriz$Facturacion_Neta_Cliente 
+Matriz$porcentaje_cobrado_cliente <- ifelse(Matriz$importe_recibos == 0,0,
+                                            Matriz$importe_recibos / Matriz$Facturacion_Neta_Cliente) 
 
 Matriz$Categoria_facturacion <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
-                                ifelse((Matriz$porcentaje_acumulado < 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
+                                ifelse((Matriz$porcentaje_facturado_acumulado < 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
                                        1,
-                                       ifelse((Matriz$porcentaje_acumulado >= 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
-                                              2,"definir")))
+                                       ifelse((Matriz$porcentaje_facturado_acumulado >= 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
+                                              2,-1)))
 
 Matriz$Categoria_impugnaciones <- ifelse(Matriz$importe_impugnado == 0,0,
                                          ifelse(Matriz$importe_impugnado == Matriz$importe_facturado,
@@ -120,7 +121,7 @@ Matriz$Categoria_impugnaciones <- ifelse(Matriz$importe_impugnado == 0,0,
 
 
 Matriz$Categoria_Cobranzas <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
-                                     ifelse((Matriz$Facturacion_Neta_Cliente > 0) & (Matriz$importe_recibos == 0),1,
+                                     ifelse((Matriz$Facturacion_Neta_Cliente >= 0) & (Matriz$importe_recibos == 0),1,
                                             ifelse((Matriz$Facturacion_Neta_Cliente > 0) & (Matriz$porcentaje_cobrado_cliente < 0.4),2,
                                                    ifelse((Matriz$porcentaje_cobrado_cliente >= 0.40) & (Matriz$porcentaje_cobrado_cliente < 0.80),3,4))))
 
