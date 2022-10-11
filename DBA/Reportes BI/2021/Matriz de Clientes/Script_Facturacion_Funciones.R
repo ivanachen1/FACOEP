@@ -222,3 +222,19 @@ queryNotaDB <- function(tipo_facturas,tipo_notadb,fecha_minima_factura,fecha_max
   
   return(query)
 }
+
+GetMasterDate <- function(dataframe){
+  dataframe$Fecha_Corte <- paste(dataframe$anio_inicio,
+                                 dataframe$mes_inicio,
+                                 dataframe$dia_inicio,sep = "-")
+  
+  dataframe$Fecha_Corte <- as.Date(dataframe$Fecha_Corte)
+  
+  dataframe$fecha_fin_factura <- dataframe$Fecha_Corte - 1
+  dataframe$Fecha_inicio_factura <- dataframe$Fecha_Corte - 365
+  dataframe$Fecha_inicio_otros <- dataframe$Fecha_inicio_factura
+  dataframe$Fecha_fin_otros <- ceiling_date(dataframe$Fecha_Corte,"month")
+  dataframe$Fecha_fin_otros <- ceiling_date(dataframe$Fecha_fin_otros,"month") - days(1)
+  return(dataframe)
+  
+}

@@ -46,92 +46,106 @@ con <- dbConnect(drv, dbname = database,
                  user = user,
                  password = pw)
 
-Clientes <- dbGetQuery(con,"SELECT clienteid,clientenombre FROM clientes") 
+Clientes <- dbGetQuery(con,"SELECT clienteid,clientenombre FROM clientes")
 
-options(scipen=999)
-# Caso del Analisis
-QueryFacturas <- dfQueryFacturas(tipo_facturas = comprobantes_facturas,
-                         fecha_minima = as.Date('2021-06-01'),
-                         fecha_maxima = as.Date('2022-05-31'))
+fechas_corte <- GetFile("fechas_corte.xlsx",path_one = workdirectory,path_two = workdirectory)
 
-cat(QueryFacturas)
+fechas_corte <- GetMasterDate(fechas_corte)
 
-facturacion <- dbGetQuery(con,QueryFacturas)
+hoy <- Sys.Date()
+mes <- month(hoy)
+anio <- year(hoy)
 
-QueryNc <- QueryImputaciones(tipo_facturas = comprobantes_facturas,
-                             tipo_imputaciones = comprobantes_nc,
-                             fecha_minima_factura = as.Date('2021-06-01'),
-                             fecha_maxima_factura = as.Date('2022-05-31'),
-                             fecha_minima_imputacion = as.Date('2021-06-01'),
-                             fecha_maxima_imputacion = as.Date('2022-07-31'),
-                             nombre_imputacion = 'notacredito')
+fechas_corte <- filter(fechas_corte,mes_inicio <= mes & anio_inicio <= anio)
 
-Nc <- dbGetQuery(con,QueryNc)
-
-
-queryCobranzas <- QueryImputaciones(tipo_facturas = comprobantes_facturas,
-                             tipo_imputaciones = comprobantes_recibos,
-                             fecha_minima_factura = as.Date('2021-06-01'),
-                             fecha_maxima_factura = as.Date('2022-05-31'),
-                             fecha_minima_imputacion = as.Date('2021-06-01'),
-                             fecha_maxima_imputacion = as.Date('2022-07-31'),
-                             nombre_imputacion = 'recibos')
-
-cobranza <- dbGetQuery(con,queryCobranzas)
-
-queryImpugnaciones <- queryNotaDB(tipo_facturas = comprobantes_facturas,
+datalist = list()
+for(i in 1:nrow(fechas_corte)){
+  QueryFacturas <- dfQueryFacturas(tipo_facturas = comprobantes_facturas,
+                                   fecha_minima = as.Date(fechas_corte$Fecha_inicio_factura[i]),
+                                   fecha_maxima = as.Date(fechas_corte$fecha_fin_factura[i]))
+  
+  facturacion <- dbGetQuery(con,QueryFacturas)
+  
+  QueryNc <- QueryImputaciones(tipo_facturas = comprobantes_facturas,
+                               tipo_imputaciones = comprobantes_nc,
+                               fecha_minima_factura = as.Date(fechas_corte$Fecha_inicio_factura[i]),
+                               fecha_maxima_factura = as.Date(fechas_corte$fecha_fin_factura[i]),
+                               fecha_minima_imputacion = as.Date(fechas_corte$Fecha_inicio_otros[i]),
+                               fecha_maxima_imputacion = as.Date(fechas_corte$Fecha_fin_otros[i]),
+                               nombre_imputacion = 'notacredito')
+  Nc <- dbGetQuery(con,QueryNc)
+  
+  queryCobranzas <- QueryImputaciones(tipo_facturas = comprobantes_facturas,
+                                      tipo_imputaciones = comprobantes_recibos,
+                                      fecha_minima_factura = as.Date(fechas_corte$Fecha_inicio_factura[i]),
+                                      fecha_maxima_factura = as.Date(fechas_corte$fecha_fin_factura[i]),
+                                      fecha_minima_imputacion = as.Date(fechas_corte$Fecha_inicio_otros[i]),
+                                      fecha_maxima_imputacion = as.Date(fechas_corte$Fecha_fin_otros[i]),
+                                      nombre_imputacion = 'recibos')
+  
+  cobranza <- dbGetQuery(con,queryCobranzas)
+  
+  queryImpugnaciones <- queryNotaDB(tipo_facturas = comprobantes_facturas,
                                     tipo_notadb = comprobantes_notadb,
-                                    fecha_minima_factura = as.Date('2021-06-01'),
-                                    fecha_maxima_factura = as.Date('2022-05-31'),
-                                    fecha_minima_notadb = as.Date('2021-06-01'),
-                                    fecha_maxima_notadb = as.Date('2022-07-31'),
+                                    fecha_minima_factura = as.Date(fechas_corte$Fecha_inicio_factura[i]),
+                                    fecha_maxima_factura = as.Date(fechas_corte$fecha_fin_factura[i]),
+                                    fecha_minima_notadb = as.Date(fechas_corte$Fecha_inicio_otros[i]),
+                                    fecha_maxima_notadb = as.Date(fechas_corte$Fecha_fin_otros[i]),
                                     nombre_notadb = 'notadb')
+  
+  NotaDB <- dbGetQuery(con,queryImpugnaciones)
+  
+  Matriz <- left_join(Clientes,facturacion,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Matriz,Nc,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Matriz,cobranza,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Matriz,NotaDB,by = c('clienteid' = 'clienteid'))
+  
+  Matriz [is.na(Matriz)] = 0
+  
+  Matriz$Facturacion_Neta_Cliente <- Matriz$importe_facturado - Matriz$importe_notacredito
+  
+  Matriz$Facturacion_Neta_Total <- sum(Matriz$importe_facturado) - sum(Matriz$importe_notacredito)
+  
+  Matriz <- Matriz[order(Matriz$Facturacion_Neta_Cliente,decreasing = TRUE),]
+  
+  Matriz$porcentaje_cliente <- Matriz$Facturacion_Neta_Cliente / Matriz$Facturacion_Neta_Total 
+  
+  Matriz$porcentaje_facturado_acumulado <- cumsum(Matriz$porcentaje_cliente)
+  
+  Matriz$porcentaje_cobrado_cliente <- ifelse(Matriz$importe_recibos == 0,0,
+                                              Matriz$importe_recibos / Matriz$Facturacion_Neta_Cliente) 
+  
+  Matriz$Categoria_facturacion <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
+                                         ifelse((Matriz$porcentaje_facturado_acumulado < 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
+                                                1,
+                                                ifelse((Matriz$porcentaje_facturado_acumulado >= 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
+                                                       2,-1)))
+  
+  Matriz$Categoria_impugnaciones <- ifelse(Matriz$importe_impugnado == 0,0,
+                                           ifelse(Matriz$importe_impugnado == Matriz$importe_facturado,
+                                                  2,1))
+  Matriz$Categoria_Cobranzas <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
+                                       ifelse((Matriz$Facturacion_Neta_Cliente >= 0) & (Matriz$importe_recibos == 0),1,
+                                              ifelse((Matriz$Facturacion_Neta_Cliente > 0) & (Matriz$porcentaje_cobrado_cliente < 0.4),2,
+                                                     ifelse((Matriz$porcentaje_cobrado_cliente >= 0.40) & (Matriz$porcentaje_cobrado_cliente < 0.80),3,4))))
+  
+  
+  
+  Matriz$Tipo_Cliente <- ifelse(Matriz$Categoria_facturacion == 0,4,
+                                ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 1),1,
+                                       ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 2),1,
+                                              ifelse(((Matriz$Categoria_Cobranzas == 2) | (Matriz$Categoria_Cobranzas == 3)) & ((Matriz$Categoria_facturacion == 1) | (Matriz$Categoria_facturacion == 2)),2,3))))
+  
+  Matriz$Periodo <- fechas_corte$Fecha_Corte[i]
+  
+  datalist[[i]] <- Matriz
+  
+}
 
-NotaDB <- dbGetQuery(con,queryImpugnaciones)
+bigMatrix <- do.call(rbind, datalist)
 
-Matriz <- left_join(Clientes,facturacion,by = c('clienteid' = 'clienteid'))
-Matriz <- left_join(Matriz,Nc,by = c('clienteid' = 'clienteid'))
-Matriz <- left_join(Matriz,cobranza,by = c('clienteid' = 'clienteid'))
-Matriz <- left_join(Matriz,NotaDB,by = c('clienteid' = 'clienteid'))
-
-Matriz [is.na(Matriz)] = 0
-
-Matriz$Facturacion_Neta_Cliente <- Matriz$importe_facturado - Matriz$importe_notacredito
-
-Matriz$Facturacion_Neta_Total <- sum(Matriz$importe_facturado) - sum(Matriz$importe_notacredito)
-
-Matriz <- Matriz[order(Matriz$Facturacion_Neta_Cliente,decreasing = TRUE),]
-
-Matriz$porcentaje_cliente <- Matriz$Facturacion_Neta_Cliente / Matriz$Facturacion_Neta_Total 
-
-Matriz$porcentaje_facturado_acumulado <- cumsum(Matriz$porcentaje_cliente)
-
-Matriz$porcentaje_cobrado_cliente <- ifelse(Matriz$importe_recibos == 0,0,
-                                            Matriz$importe_recibos / Matriz$Facturacion_Neta_Cliente) 
-
-Matriz$Categoria_facturacion <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
-                                ifelse((Matriz$porcentaje_facturado_acumulado < 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
-                                       1,
-                                       ifelse((Matriz$porcentaje_facturado_acumulado >= 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
-                                              2,-1)))
-
-Matriz$Categoria_impugnaciones <- ifelse(Matriz$importe_impugnado == 0,0,
-                                         ifelse(Matriz$importe_impugnado == Matriz$importe_facturado,
-                                                2,1)) 
-
-
-Matriz$Categoria_Cobranzas <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
-                                     ifelse((Matriz$Facturacion_Neta_Cliente >= 0) & (Matriz$importe_recibos == 0),1,
-                                            ifelse((Matriz$Facturacion_Neta_Cliente > 0) & (Matriz$porcentaje_cobrado_cliente < 0.4),2,
-                                                   ifelse((Matriz$porcentaje_cobrado_cliente >= 0.40) & (Matriz$porcentaje_cobrado_cliente < 0.80),3,4))))
-
-
-
-Matriz$Tipo_Cliente <- ifelse(Matriz$Categoria_facturacion == 0,4,
-                              ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 1),1,
-                                     ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 2),1,
-                                            ifelse(((Matriz$Categoria_Cobranzas == 2) | (Matriz$Categoria_Cobranzas == 3)) & ((Matriz$Categoria_facturacion == 1) | (Matriz$Categoria_facturacion == 2)),2,3))))  
-
-write.csv(Matriz,"Matriz de Clientes.csv")
+#Tengo que guardar la Matriz en Postgres por tema de rendimiento
+ 
+#write.csv(bigMatrix,"Matriz de Clientes.csv")
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
