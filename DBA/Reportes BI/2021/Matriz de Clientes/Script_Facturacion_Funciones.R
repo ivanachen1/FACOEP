@@ -236,5 +236,83 @@ GetMasterDate <- function(dataframe){
   dataframe$Fecha_fin_otros <- ceiling_date(dataframe$Fecha_Corte,"month")
   dataframe$Fecha_fin_otros <- ceiling_date(dataframe$Fecha_fin_otros,"month") - days(1)
   return(dataframe)
+}
+
+GetHistoricQuery <- function(fechaDesde,fechaHasta,tipoFacturas,tipoImputaciones,nombre_imputacion){
   
+  anio_inicio_factura <- year(fechaDesde)
+  mes_inicio_factura <- month(fechaDesde)
+  dia_inicio_factura <- day(fechaDesde)
+  
+  anio_fin_factura <- year(fechaHasta)
+  mes_fin_factura <- month(fechaHasta)
+  dia_fin_factura <- day(fechaHasta)
+  
+  query <- paste("SELECT",  
+                 "facturas.comprobanteentidadcodigo as clienteid,",
+                 "SUM(imputacion.comprobanteimputacionimporte) as importe_{nombre_imputacion}",
+                 
+                 "FROM comprobantes as facturas",
+                 
+                 "LEFT JOIN", 
+                 "comprobantesimputaciones as imputacion",
+                 
+                 "ON", 
+                 "facturas.tipocomprobantecodigo = 	imputacion.tipocomprobantecodigo AND",
+                 "facturas.comprobanteprefijo = 		imputacion.comprobanteprefijo AND",
+                 "facturas.comprobantecodigo = 		  imputacion.comprobantecodigo AND",
+                 "facturas.comprobanteentidadcodigo = imputacion.comprobanteentidadcodigo",
+                 
+                 "WHERE facturas.comprobantetipoentidad = 2", 
+                 "AND facturas.tipocomprobantecodigo IN ({tipoFacturas})",
+                 "AND facturas.comprobantefechaemision",
+                 "BETWEEN '{anio_inicio_factura}-{mes_inicio_factura}-{dia_inicio_factura}' AND",
+                 "'{anio_fin_factura}-{mes_fin_factura}-{dia_fin_factura}'",
+                 "AND imputacion.comprobanteimputaciontipo IN ({tipoImputaciones})",
+                 "AND imputacion.comprobanteimputacionfecha BETWEEN",
+                 "'{anio_inicio_factura}-{mes_inicio_factura}-{dia_inicio_factura}'",
+                 "AND '{anio_fin_factura}-{mes_fin_factura}-{dia_fin_factura}'",
+                 
+                 "GROUP BY",
+                 "facturas.comprobanteentidadcodigo",sep = " ")
+  
+  query <- glue(query)
+  
+  return(query)
+  
+}
+
+GetSaldosDeuda <- function(dataframeClientes,dataframeFacturado,dataframeNc,dataframeRecibos){
+  
+  Matriz <- left_join(dataframeClientes,dataframeFacturado,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Matriz,dataframeNc,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Matriz,dataframeRecibos,by = c('clienteid' = 'clienteid'))
+  
+  Matriz [is.na(Matriz)] = 0
+  
+  Matriz$FacturadoNetoHistorico <- Matriz$importe_facturado - Matriz$importe_notacredito
+  Matriz$SaldoHistorico <- Matriz$FacturadoNeto - Matriz$importe_recibos
+  Matriz$SaldoHistorico <- ceiling(Matriz$SaldoHistorico)
+  Matriz$importe_facturado <- NULL
+  Matriz$FacturadoNetoHistorico <- NULL
+  Matriz$importe_notacredito <- NULL
+  Matriz$FacturadoNeto <- NULL
+  Matriz$importe_recibos <- NULL
+  Matriz$clientenombre <- NULL
+  
+  
+  
+  return(Matriz)
+}
+
+matrixFormat <- function(Matriz){
+  
+  Matriz$porcentaje_cliente <- paste(round(Matriz$porcentaje_cliente * 100,2),"%",sep = "")
+  
+  Matriz$porcentaje_facturado_acumulado <- paste(round(Matriz$porcentaje_facturado_acumulado * 100,2),"%",sep = "")
+  
+  Matriz$porcentaje_cobrado_cliente <- paste(round(Matriz$porcentaje_cobrado_cliente * 100,2),"%",sep = "")
+  
+  
+ return(Matriz) 
 }

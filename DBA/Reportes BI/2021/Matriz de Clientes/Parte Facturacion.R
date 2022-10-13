@@ -1,6 +1,6 @@
 #workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturaci?n"
 workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Matriz de Clientes"
-
+# Tengo que ver por que carajo me tira error, deberia probar las funciones por afuera
 
 Archivo <-"Script_Facturacion_Funciones.R"
 
@@ -52,14 +52,53 @@ fechas_corte <- GetFile("fechas_corte.xlsx",path_one = workdirectory,path_two = 
 
 fechas_corte <- GetMasterDate(fechas_corte)
 
-hoy <- Sys.Date()
-mes <- month(hoy)
-anio <- year(hoy)
+fecha_final <-  floor_date(Sys.Date(), 'month')
+fecha_mes_anterior <- floor_date(fecha_final,unit = 'month') - 1
+fecha_mes_anterior <- floor_date(fecha_mes_anterior,unit = 'month')
 
-fechas_corte <- filter(fechas_corte,mes_inicio <= mes & anio_inicio <= anio)
+########### Criterio para obtener un mes
+fechas_corte <- filter(fechas_corte,
+                       Fecha_Corte == '2022-06-01') 
+
+### Criterio automatizado
+#fechas_corte <- filter(fechas_corte,
+#                       Fecha_Corte == fecha_final | Fecha_Corte == fecha_mes_anterior) 
+
+#fechas_corte$Fecha_inicio_factura[1] - 1
 
 datalist = list()
 for(i in 1:nrow(fechas_corte)){
+  
+  fechaHasta <- (fechas_corte$fecha_fin_factura[i])
+  fechaHasta <- as.Date(fechaHasta)
+  
+  FacturasHistoricas <- dfQueryFacturas(tipo_facturas = comprobantes_facturas,
+                                        fecha_minima = as.Date('2017-01-01'),
+                                        fecha_maxima = fechaHasta)
+  
+  FacturasHistoricas <- dbGetQuery(con,FacturasHistoricas)
+  
+  NcHistoricas <- GetHistoricQuery(fechaDesde = as.Date('2017-01-01'),
+                                         fechaHasta = fechaHasta,
+                                         tipoFacturas = comprobantes_facturas,
+                                         tipoImputaciones = comprobantes_nc,
+                                         nombre_imputacion = "notacredito")
+  
+  NcHistoricas <- dbGetQuery(con,NcHistoricas)
+  
+  RecibosHistoricos <- GetHistoricQuery(fechaDesde = as.Date('2017-01-01'),
+                                   fechaHasta = fechaHasta,
+                                   tipoFacturas = comprobantes_facturas,
+                                   tipoImputaciones = comprobantes_recibos,
+                                   nombre_imputacion = "recibos")
+  
+  RecibosHistoricos <- dbGetQuery(con,RecibosHistoricos)
+  
+  SaldoHistorico <- GetSaldosDeuda(dataframeClientes = Clientes,
+                                   dataframeFacturado = FacturasHistoricas,
+                                   dataframeNc = NcHistoricas,
+                                   dataframeRecibos = RecibosHistoricos) 
+  
   QueryFacturas <- dfQueryFacturas(tipo_facturas = comprobantes_facturas,
                                    fecha_minima = as.Date(fechas_corte$Fecha_inicio_factura[i]),
                                    fecha_maxima = as.Date(fechas_corte$fecha_fin_factura[i]))
@@ -95,7 +134,8 @@ for(i in 1:nrow(fechas_corte)){
   
   NotaDB <- dbGetQuery(con,queryImpugnaciones)
   
-  Matriz <- left_join(Clientes,facturacion,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Clientes,SaldoHistorico,by = c('clienteid' = 'clienteid'))
+  Matriz <- left_join(Matriz,facturacion,by = c('clienteid' = 'clienteid'))
   Matriz <- left_join(Matriz,Nc,by = c('clienteid' = 'clienteid'))
   Matriz <- left_join(Matriz,cobranza,by = c('clienteid' = 'clienteid'))
   Matriz <- left_join(Matriz,NotaDB,by = c('clienteid' = 'clienteid'))
@@ -113,7 +153,8 @@ for(i in 1:nrow(fechas_corte)){
   Matriz$porcentaje_facturado_acumulado <- cumsum(Matriz$porcentaje_cliente)
   
   Matriz$porcentaje_cobrado_cliente <- ifelse(Matriz$importe_recibos == 0,0,
-                                              Matriz$importe_recibos / Matriz$Facturacion_Neta_Cliente) 
+                                              Matriz$importe_recibos / Matriz$Facturacion_Neta_Cliente)
+  Matriz <- matrixFormat(Matriz)
   
   Matriz$Categoria_facturacion <- ifelse(Matriz$Facturacion_Neta_Cliente == 0,0,
                                          ifelse((Matriz$porcentaje_facturado_acumulado < 0.8) & (Matriz$Facturacion_Neta_Cliente > 0),
@@ -131,10 +172,12 @@ for(i in 1:nrow(fechas_corte)){
   
   
   
-  Matriz$Tipo_Cliente <- ifelse(Matriz$Categoria_facturacion == 0,4,
-                                ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 1),1,
-                                       ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 2),1,
-                                              ifelse(((Matriz$Categoria_Cobranzas == 2) | (Matriz$Categoria_Cobranzas == 3)) & ((Matriz$Categoria_facturacion == 1) | (Matriz$Categoria_facturacion == 2)),2,3))))
+  Matriz$Tipo_Cliente <- ifelse((Matriz$Categoria_facturacion == 0) & (Matriz$SaldoHistorico > 0),4,
+                                ifelse((Matriz$Categoria_facturacion == 0) & (Matriz$SaldoHistorico == 0),-1,
+                                       ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 1),1,
+                                              ifelse((Matriz$Categoria_Cobranzas == 1) & (Matriz$Categoria_facturacion == 2),1,
+                                                     ifelse(((Matriz$Categoria_Cobranzas == 2) | (Matriz$Categoria_Cobranzas == 3)) & ((Matriz$Categoria_facturacion == 1) | (Matriz$Categoria_facturacion == 2)),
+                                                            2,3)))))
   
   Matriz$Periodo <- fechas_corte$Fecha_Corte[i]
   
@@ -144,8 +187,25 @@ for(i in 1:nrow(fechas_corte)){
 
 bigMatrix <- do.call(rbind, datalist)
 
-#Tengo que guardar la Matriz en Postgres por tema de rendimiento
- 
-#write.csv(bigMatrix,"Matriz de Clientes.csv")
+bigMatrix <- select(bigMatrix,
+                    "id" = clienteid,
+                    "cliente" = clientenombre,
+                    "Saldo al 31-05-2021" = SaldoHistorico,
+                    "Facturacion Bruta" = importe_facturado,
+                    "Importe Notas Credito" = importe_notacredito,
+                    "Importe Recibos" = importe_recibos,
+                    "Importe Impugnado" = importe_impugnado,
+                    "Facturacion Neta" = Facturacion_Neta_Cliente,
+                    "Facturacion Neta Total Periodo" = Facturacion_Neta_Total,
+                    "% Facturado del total" = porcentaje_cliente,
+                    "% Acumulado Facturado del total" = porcentaje_facturado_acumulado,
+                    "% Cobrado sobre Facturado" = porcentaje_cobrado_cliente,
+                    "Categoria Facturacion" = Categoria_facturacion,
+                    "Categoria Impugnacion" = Categoria_impugnaciones,
+                    "Categoria Cobranzas" = Categoria_Cobranzas,
+                    "Tipo Cliente" = Tipo_Cliente,
+                    "Incio Periodo Analizado" = Periodo)
+
+write.csv(bigMatrix,"Matriz al 31-07-2022.csv",row.names = FALSE)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
