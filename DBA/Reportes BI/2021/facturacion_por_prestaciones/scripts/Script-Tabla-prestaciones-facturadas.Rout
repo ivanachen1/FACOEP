@@ -1,0 +1,211 @@
+
+R version 4.1.1 (2021-08-10) -- "Kick Things"
+Copyright (C) 2021 The R Foundation for Statistical Computing
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+
+R es un software libre y viene sin GARANTIA ALGUNA.
+Usted puede redistribuirlo bajo ciertas circunstancias.
+Escriba 'license()' o 'licence()' para detalles de distribucion.
+
+R es un proyecto colaborativo con muchos contribuyentes.
+Escriba 'contributors()' para obtener más información y
+'citation()' para saber cómo citar R o paquetes de R en publicaciones.
+
+Escriba 'demo()' para demostraciones, 'help()' para el sistema on-line de ayuda,
+o 'help.start()' para abrir el sistema de ayuda HTML con su navegador.
+Escriba 'q()' para salir de R.
+
+[Previously saved workspace restored]
+
+> #source("C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Facturacion por Prestaciones/FuncionesHelper.R")
+> source("E:/Personales/Sistemas/Agustin/Reportes BI/2021/facturacion_por_prestaciones/scripts/FuncionesHelper.R")
+-- Attaching packages --------------------------------------- tidyverse 1.3.1 --
+v ggplot2 3.3.5     v purrr   0.3.4
+v tibble  3.1.7     v dplyr   1.0.9
+v tidyr   1.2.0     v stringr 1.4.0
+v readr   2.0.1     v forcats 0.5.1
+-- Conflicts ------------------------------------------ tidyverse_conflicts() --
+x dplyr::between()   masks data.table::between()
+x dplyr::filter()    masks stats::filter()
+x dplyr::first()     masks data.table::first()
+x dplyr::lag()       masks stats::lag()
+x dplyr::last()      masks data.table::last()
+x purrr::transpose() masks data.table::transpose()
+
+Attaching package: 'scales'
+
+The following object is masked from 'package:purrr':
+
+    discard
+
+The following object is masked from 'package:readr':
+
+    col_factor
+
+
+Attaching package: 'formattable'
+
+The following objects are masked from 'package:scales':
+
+    comma, percent, scientific
+
+------------------------------------------------------------------------------
+You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)
+------------------------------------------------------------------------------
+
+Attaching package: 'plyr'
+
+The following objects are masked from 'package:dplyr':
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize
+
+The following object is masked from 'package:purrr':
+
+    compact
+
+
+Attaching package: 'zoo'
+
+The following objects are masked from 'package:base':
+
+    as.Date, as.Date.numeric
+
+
+Attaching package: 'lubridate'
+
+The following objects are masked from 'package:data.table':
+
+    hour, isoweek, mday, minute, month, quarter, second, wday, week,
+    yday, year
+
+The following objects are masked from 'package:base':
+
+    date, intersect, setdiff, union
+
+Loading required package: DBI
+
+Attaching package: 'BBmisc'
+
+The following object is masked from 'package:formattable':
+
+    normalize
+
+The following objects are masked from 'package:dplyr':
+
+    coalesce, collapse
+
+The following object is masked from 'package:base':
+
+    isFALSE
+
+Warning messages:
+1: package 'data.table' was built under R version 4.1.3 
+2: package 'tibble' was built under R version 4.1.3 
+3: package 'tidyr' was built under R version 4.1.3 
+4: package 'dplyr' was built under R version 4.1.3 
+5: package 'lubridate' was built under R version 4.1.3 
+6: package 'BBmisc' was built under R version 4.1.2 
+7: package 'glue' was built under R version 4.1.3 
+8: package 'readxl' was built under R version 4.1.3 
+> 
+> 
+> drv <- dbDriver("PostgreSQL")
+> 
+> 
+> pw <- {"serveradmin"}
+> con_prod <- dbConnect(drv, dbname = "Facoep",
++                  host = "10.22.0.142", port = 5432,
++                  user = "postgres", password = pw)
+> 
+> #workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturacion por Prestaciones"
+> 
+> fecha_fin <- Sys.Date()
+> 
+> 
+> #fecha_inicio <- as.Date('2022-01-01')
+> #fecha_fin <- as.Date('2022-12-31')
+> 
+> fecha_inicio <- ceiling_date(fecha_fin, 'month') - 1
+> fecha_inicio <- floor_date(fecha_inicio,unit = 'month') - 1
+> fecha_inicio <- floor_date(fecha_inicio,unit = 'month')
+> 
+> hoy <- Sys.Date()
+> mes_hoy <- month(hoy)
+> anio_hoy <- year(hoy)
+> 
+> 
+> query <- GetQuery(fecha_actual = fecha_fin,
++                   fecha_anterior = fecha_inicio)
+> 
+> 
+> facturacion <- dbGetQuery(conn = con_prod,query)
+> 
+> #lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+> 
+> facturacion$year <- year(facturacion$emision)
+> facturacion$month <- month(facturacion$emision)
+> facturacion$emision <- as.Date(facturacion$emision)
+> 
+> fecha_final_df <- max(facturacion$emision)
+> facturacion$fecha_inicio <- floor_date(facturacion$emision,'month')
+> 
+> 
+> facturacion$fecha_fin <- fifelse(mes_hoy == facturacion$month & anio_hoy == facturacion$year,
++                                  fecha_final_df,ceiling_date(facturacion$emision,unit = 'month')-1)
+> 
+> 
+> 
+> fecha_final_df
+[1] "2022-10-13"
+> 
+> facturacion$cantidad <- 1
+> 
+> facturacion <- select(facturacion,
++                       "efectorcodigo" = efectorcodigo,
++                       "codigoooss" = codigoooss,
++                       "prestacion" = prestacion,
++                       "importeprestacion" = importeprestacion,
++                       "centrocosto" = centrocosto,
++                       "fecha_inicio" = fecha_inicio,
++                       "fecha_fin" = fecha_fin,
++                       "year" = year,
++                       "month" = month,
++                       "cantidad" = cantidad)
+> 
+> facturacion <- aggregate(.~efectorcodigo+codigoooss+prestacion+centrocosto+year+month+fecha_inicio+fecha_fin,
++                          facturacion, sum)
+> 
+> facturacion <- select(facturacion,
++                       "id_efector" = efectorcodigo,
++                       "id_cliente" = codigoooss,
++                       "prestacion" = prestacion,
++                       "id_centro_costo" = centrocosto,
++                       "anio" = year,
++                       "mes" = month,
++                       "importe_prestacion" = importeprestacion,
++                       "cantidad" = cantidad,
++                       "fecha_inicio" = fecha_inicio,
++                       "fecha_fin" = fecha_fin)
+> 
+> drv1 <- dbDriver("PostgreSQL")
+> con_insercion <- dbConnect(drv1, dbname = "DBA",
++                       host = "172.31.24.12", port = 5432,
++                       user = "postgres", password = "facoep2017")
+> 
+> fechas_borrado <- unique(facturacion$fecha_inicio)
+> 
+> for(fecha in fechas_borrado){
++   anio_borrado <- year(fecha)
++   mes_borrado <- month(fecha)
++   dia_borrado <- 1
++   query <- glue(paste("DELETE FROM prestaciones_facturadas",
++                       "WHERE fecha_inicio = '{anio_borrado}-{mes_borrado}-{dia_borrado}'"))
++ 
++   dbExecute(con_insercion, query)
++ }
+Error in as.POSIXlt.numeric(x, tz = tz(x)) : 'origin' must be supplied
+Calls: year -> year.default -> as.POSIXlt -> as.POSIXlt.numeric
+Ejecución interrumpida
