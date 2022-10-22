@@ -1,20 +1,21 @@
-#workdirectory <- "C:/Users/iachenbach/Gobierno de la Ciudad de Buenos Aires/Pablo Alfredo Gadea - Tablero Facoep P BI/FACOEP/DBA/Reportes BI/2021/Facturaci?n"
-workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Matriz de Clientes"
+workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Matriz_de_clientes/scripts"
+#workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Matriz de Clientes"
+workdirectory_archivos <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Matriz_de_clientes/archivos"
 # Tengo que ver por que carajo me tira error, deberia probar las funciones por afuera
 
-Archivo <-"Script_Facturacion_Funciones.R"
+Archivo <-"FuncionesHelper.R"
 
 source(paste(workdirectory,Archivo,sep = "/"))
 
 
 
-archivo_parametros <- GetArchivoParametros(path_one = workdirectory,
-                                           path_two = workdirectory,
+archivo_parametros <- GetArchivoParametros(path_one = workdirectory_archivos,
+                                           path_two = workdirectory_archivos,
                                            file = "parametros_servidor.xlsx")
 
 tipo_comprobantes <- GetFile("tipo_comprobante.xlsx",
-                             path_one = workdirectory,
-                             path_two = workdirectory)
+                             path_one = workdirectory_archivos,
+                             path_two = workdirectory_archivos)
 
 
 tipo_comprobantes$Comprobante <- tipo_comprobantes$Tipo.Comprobante
@@ -23,9 +24,9 @@ tipo_comprobantes$Comprobante <- tipo_comprobantes$Tipo.Comprobante
 comprobantes_facturas <- GetListaINSQL(tipo_comprobantes,
                                        Filter = "factura")
 comprobantes_nc <- GetListaINSQL(tipo_comprobantes,
-                                       Filter = "nota_credito")
+                                 Filter = "nota_credito")
 comprobantes_notadb <- GetListaINSQL(tipo_comprobantes,
-                                 Filter = "notadb")
+                                     Filter = "notadb")
 
 comprobantes_recibos <- GetListaINSQL(tipo_comprobantes,
                                       Filter = "recibo")
@@ -48,7 +49,7 @@ con <- dbConnect(drv, dbname = database,
 
 Clientes <- dbGetQuery(con,"SELECT clienteid,clientenombre FROM clientes")
 
-fechas_corte <- GetFile("fechas_corte.xlsx",path_one = workdirectory,path_two = workdirectory)
+fechas_corte <- GetFile("fechas_corte.xlsx",path_one = workdirectory_archivos,path_two = workdirectory_archivos)
 
 fechas_corte <- GetMasterDate(fechas_corte)
 
@@ -56,20 +57,22 @@ fecha_final <-  floor_date(Sys.Date(), 'month')
 fecha_mes_anterior <- floor_date(fecha_final,unit = 'month') - 1
 fecha_mes_anterior <- floor_date(fecha_mes_anterior,unit = 'month')
 
-########### Criterio para obtener un mes
+########### Criterio para obtener un mes, hardcodear fecha Revision ##############
+
+mes_actual <- as.Date('2022-09-01')
 fechas_corte <- filter(fechas_corte,
-                       Fecha_Corte == '2022-06-01') 
+                       fecha_revision == mes_actual)
 
-### Criterio automatizado
+#mes_actual <- Sys.Date()
+#mes_actual <- floor_date(mes_actual,'month')
+
 #fechas_corte <- filter(fechas_corte,
-#                       Fecha_Corte == fecha_final | Fecha_Corte == fecha_mes_anterior) 
-
-#fechas_corte$Fecha_inicio_factura[1] - 1
+#                       fecha_revision == mes_actual)
 
 datalist = list()
 for(i in 1:nrow(fechas_corte)){
   
-  fechaHasta <- (fechas_corte$fecha_fin_factura[i])
+  fechaHasta <- (fechas_corte$Fecha_fin_otros[i])
   fechaHasta <- as.Date(fechaHasta)
   
   FacturasHistoricas <- dfQueryFacturas(tipo_facturas = comprobantes_facturas,
@@ -79,25 +82,25 @@ for(i in 1:nrow(fechas_corte)){
   FacturasHistoricas <- dbGetQuery(con,FacturasHistoricas)
   
   NcHistoricas <- GetHistoricQuery(fechaDesde = as.Date('2017-01-01'),
-                                         fechaHasta = fechaHasta,
-                                         tipoFacturas = comprobantes_facturas,
-                                         tipoImputaciones = comprobantes_nc,
-                                         nombre_imputacion = "notacredito")
+                                   fechaHasta = fechaHasta,
+                                   tipoFacturas = comprobantes_facturas,
+                                   tipoImputaciones = comprobantes_nc,
+                                   nombre_imputacion = "notacredito")
   
   NcHistoricas <- dbGetQuery(con,NcHistoricas)
   
   RecibosHistoricos <- GetHistoricQuery(fechaDesde = as.Date('2017-01-01'),
-                                   fechaHasta = fechaHasta,
-                                   tipoFacturas = comprobantes_facturas,
-                                   tipoImputaciones = comprobantes_recibos,
-                                   nombre_imputacion = "recibos")
+                                        fechaHasta = fechaHasta,
+                                        tipoFacturas = comprobantes_facturas,
+                                        tipoImputaciones = comprobantes_recibos,
+                                        nombre_imputacion = "recibos")
   
   RecibosHistoricos <- dbGetQuery(con,RecibosHistoricos)
   
   SaldoHistorico <- GetSaldosDeuda(dataframeClientes = Clientes,
                                    dataframeFacturado = FacturasHistoricas,
                                    dataframeNc = NcHistoricas,
-                                   dataframeRecibos = RecibosHistoricos) 
+                                   dataframeRecibos = RecibosHistoricos)
   
   QueryFacturas <- dfQueryFacturas(tipo_facturas = comprobantes_facturas,
                                    fecha_minima = as.Date(fechas_corte$Fecha_inicio_factura[i]),
@@ -148,7 +151,7 @@ for(i in 1:nrow(fechas_corte)){
   
   Matriz <- Matriz[order(Matriz$Facturacion_Neta_Cliente,decreasing = TRUE),]
   
-  Matriz$porcentaje_cliente <- Matriz$Facturacion_Neta_Cliente / Matriz$Facturacion_Neta_Total 
+  Matriz$porcentaje_cliente <- Matriz$Facturacion_Neta_Cliente / Matriz$Facturacion_Neta_Total
   
   Matriz$porcentaje_facturado_acumulado <- cumsum(Matriz$porcentaje_cliente)
   
@@ -179,33 +182,47 @@ for(i in 1:nrow(fechas_corte)){
                                                      ifelse(((Matriz$Categoria_Cobranzas == 2) | (Matriz$Categoria_Cobranzas == 3)) & ((Matriz$Categoria_facturacion == 1) | (Matriz$Categoria_facturacion == 2)),
                                                             2,3)))))
   
-  Matriz$Periodo <- fechas_corte$Fecha_Corte[i]
   
+  
+  Matriz$inicio_analisis <- fechas_corte$fecha_inicio[i]
+  Matriz$fin_analisis <- fechas_corte$Fecha_fin_otros[i]
+  Matriz$inicio_revision <- fechas_corte$fecha_revision[i]
   datalist[[i]] <- Matriz
   
 }
 
 bigMatrix <- do.call(rbind, datalist)
 
+# Siempre tengo que dejar el nombre exacto en R con respecto a Postgres, con las minus y todo.
 bigMatrix <- select(bigMatrix,
-                    "id" = clienteid,
-                    "cliente" = clientenombre,
-                    "Saldo al 31-05-2021" = SaldoHistorico,
-                    "Facturacion Bruta" = importe_facturado,
-                    "Importe Notas Credito" = importe_notacredito,
-                    "Importe Recibos" = importe_recibos,
-                    "Importe Impugnado" = importe_impugnado,
-                    "Facturacion Neta" = Facturacion_Neta_Cliente,
-                    "Facturacion Neta Total Periodo" = Facturacion_Neta_Total,
-                    "% Facturado del total" = porcentaje_cliente,
-                    "% Acumulado Facturado del total" = porcentaje_facturado_acumulado,
-                    "% Cobrado sobre Facturado" = porcentaje_cobrado_cliente,
-                    "Categoria Facturacion" = Categoria_facturacion,
-                    "Categoria Impugnacion" = Categoria_impugnaciones,
-                    "Categoria Cobranzas" = Categoria_Cobranzas,
-                    "Tipo Cliente" = Tipo_Cliente,
-                    "Incio Periodo Analizado" = Periodo)
+                    "cliente_id" = clienteid,
+                    "cliente_nombre" = clientenombre,
+                    "saldo_historico" = SaldoHistorico,
+                    "importe_facturado" = importe_facturado,
+                    "importe_notacredito" = importe_notacredito,
+                    "importe_recibos" = importe_recibos,
+                    "importe_impugnado" = importe_impugnado,
+                    "facturacion_neta_cliente" = Facturacion_Neta_Cliente,
+                    "facturacion_neta_total" = Facturacion_Neta_Total,
+                    "porcentaje_cliente" = porcentaje_cliente,
+                    "porcentaje_facturado_acumulado" = porcentaje_facturado_acumulado,
+                    "porcentaje_cobrado_cliente" = porcentaje_cobrado_cliente,
+                    "categoria_facturacion" = Categoria_facturacion,
+                    "categoria_impugnaciones" = Categoria_impugnaciones,
+                    "categoria_cobranzas" = Categoria_Cobranzas,
+                    "tipo_cliente" = Tipo_Cliente,
+                    "inicio_analisis" = inicio_analisis,
+                    "fin_analisis" = fin_analisis,
+                    "inicio_revision" = inicio_revision)
 
-write.csv(bigMatrix,"Matriz al 31-07-2022.csv",row.names = FALSE)
+con_insercion <- dbConnect(drv, dbname = "DBA",
+                           host = "172.31.24.12", port = 5432,
+                           user = "postgres", password = "facoep2017")
+
+
+dbWriteTable(conn= con_insercion, name='matriz_clientes', value = bigMatrix,
+             overwrite=FALSE, append=TRUE, row.names= FALSE)
+
+#write.csv(bigMatrix,"Matriz al 31-07-2022.csv",row.names = FALSE)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})

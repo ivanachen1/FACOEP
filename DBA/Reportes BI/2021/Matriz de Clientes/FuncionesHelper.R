@@ -16,8 +16,6 @@ library(readxl)
 #library(reader)
 library(stringr)
 
-
-
 GetArchivoParametros <- function(path_one,path_two,file){
   intento  <- is.error(try(read.xlsx(paste(path_two,file,sep = "/")),silent = F,outFile = "Error"))
   if(intento == TRUE){
@@ -117,10 +115,20 @@ QueryImputaciones <- function(tipo_facturas,tipo_imputaciones,fecha_minima_factu
                  "comprobantesimputaciones as imputacion",
                  
                  "ON", 
-                 "facturas.tipocomprobantecodigo = 	imputacion.tipocomprobantecodigo AND",
-                 "facturas.comprobanteprefijo = 		imputacion.comprobanteprefijo AND",
-                 "facturas.comprobantecodigo = 		imputacion.comprobantecodigo AND",
-                 "facturas.comprobanteentidadcodigo = imputacion.comprobanteentidadcodigo",
+                 "facturas.tipocomprobantecodigo    = 	imputacion.tipocomprobantecodigo AND",
+                 "facturas.comprobanteprefijo       = 	imputacion.comprobanteprefijo AND",
+                 "facturas.comprobantecodigo        = 	imputacion.comprobantecodigo AND",
+                 "facturas.comprobanteentidadcodigo =   imputacion.comprobanteentidadcodigo",
+                 
+                 "LEFT JOIN",
+                 "(SELECT tipocomprobantecodigo,comprobanteprefijo,comprobantecodigo,",
+                 "comprobanteentidadcodigo,comprobantefechaemision,comprobantetotalimporte",
+                 "FROM comprobantes) as aux",
+                 "ON",
+                 "imputacion.tipocomprobantecodigo    =  aux.tipocomprobantecodigo AND",
+                 "imputacion.comprobanteprefijo       =  aux.comprobanteprefijo AND",
+                 "imputacion.comprobantecodigo        =  aux.comprobantecodigo AND",
+                 "imputacion.comprobanteentidadcodigo =  aux.comprobanteentidadcodigo",
                  
                  "WHERE facturas.comprobantetipoentidad = 2", 
                  "AND facturas.tipocomprobantecodigo IN ({tipo_facturas})",
@@ -128,7 +136,7 @@ QueryImputaciones <- function(tipo_facturas,tipo_imputaciones,fecha_minima_factu
                  "BETWEEN '{anio_inicio_factura}-{mes_inicio_factura}-{dia_inicio_factura}' AND",
                  "'{anio_fin_factura}-{mes_fin_factura}-{dia_fin_factura}'",
                  "AND imputacion.comprobanteimputaciontipo IN ({tipo_imputaciones})",
-                 "AND imputacion.comprobanteimputacionfecha BETWEEN",
+                 "AND aux.comprobantefechaemision BETWEEN",
                  "'{anio_inicio_imputacion}-{mes_inicio_imputacion}-{dia_inicio_imputacion}'",
                  "AND '{anio_fin_imputacion}-{mes_fin_imputacion}-{dia_fin_imputacion}'",
                  
@@ -224,17 +232,30 @@ queryNotaDB <- function(tipo_facturas,tipo_notadb,fecha_minima_factura,fecha_max
 }
 
 GetMasterDate <- function(dataframe){
-  dataframe$Fecha_Corte <- paste(dataframe$anio_inicio,
-                                 dataframe$mes_inicio,
-                                 dataframe$dia_inicio,sep = "-")
   
-  dataframe$Fecha_Corte <- as.Date(dataframe$Fecha_Corte)
+  dataframe$dia_inicio <- 1
+  dataframe$dia_revision <- 1
   
-  dataframe$fecha_fin_factura <- dataframe$Fecha_Corte - 1
-  dataframe$Fecha_inicio_factura <- dataframe$Fecha_Corte - 365
-  dataframe$Fecha_inicio_otros <- dataframe$Fecha_inicio_factura
-  dataframe$Fecha_fin_otros <- ceiling_date(dataframe$Fecha_Corte,"month")
-  dataframe$Fecha_fin_otros <- ceiling_date(dataframe$Fecha_fin_otros,"month") - days(1)
+  dataframe$fecha_inicio <- paste(dataframe$anio_inicio,
+                                  dataframe$mes_inicio,
+                                  dataframe$dia_inicio,
+                                  sep = "-")
+  
+  dataframe$fecha_revision <- paste(dataframe$anio_revision,
+                                    dataframe$mes_revision,
+                                    dataframe$dia_revision,
+                                    sep = "-")
+  
+  print(dataframe$fecha_inicio)
+  
+  dataframe$fecha_inicio <- as.Date(dataframe$fecha_inicio)
+  dataframe$fecha_revision<- as.Date(dataframe$fecha_revision)
+  
+  dataframe$fecha_fin_factura <- dataframe$fecha_inicio + 364
+  dataframe$Fecha_inicio_factura <- dataframe$fecha_inicio
+  dataframe$Fecha_inicio_otros <- dataframe$fecha_inicio
+  dataframe$Fecha_fin_otros <- dataframe$fecha_revision - 1 
+  #dataframe$Fecha_fin_otros <- ceiling_date(dataframe$fecha_inicio_analisis,"month") - days(1)
   return(dataframe)
 }
 
