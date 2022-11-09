@@ -1,6 +1,7 @@
-workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Matriz_de_clientes/scripts"
-#workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Matriz de Clientes"
-workdirectory_archivos <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Matriz_de_clientes/archivos"
+#workdirectory <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Matriz_de_clientes/scripts"
+workdirectory <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Matriz de Clientes"
+#workdirectory_archivos <- "E:/Personales/Sistemas/Agustin/Reportes BI/2021/Matriz_de_clientes/archivos"
+workdirectory_archivos <- "C:/Users/Usuario/Desktop/otros/FACOEP/DBA/Reportes BI/2021/Matriz de Clientes"
 # Tengo que ver por que carajo me tira error, deberia probar las funciones por afuera
 
 Archivo <-"FuncionesHelper.R"
@@ -59,7 +60,7 @@ fecha_mes_anterior <- floor_date(fecha_mes_anterior,unit = 'month')
 
 ########### Criterio para obtener un mes, hardcodear fecha Revision ##############
 
-mes_actual <- as.Date('2022-09-01')
+mes_actual <- as.Date('2022-08-01')
 fechas_corte <- filter(fechas_corte,
                        fecha_revision == mes_actual)
 
@@ -69,6 +70,7 @@ fechas_corte <- filter(fechas_corte,
 #fechas_corte <- filter(fechas_corte,
 #                       fecha_revision == mes_actual)
 
+# Acordarse de volver a Hardocdear fecha minima con '2017-01-01'
 datalist = list()
 for(i in 1:nrow(fechas_corte)){
   
@@ -215,14 +217,25 @@ bigMatrix <- select(bigMatrix,
                     "fin_analisis" = fin_analisis,
                     "inicio_revision" = inicio_revision)
 
-con_insercion <- dbConnect(drv, dbname = "DBA",
-                           host = "172.31.24.12", port = 5432,
-                           user = "postgres", password = "facoep2017")
+#con_insercion <- dbConnect(drv, dbname = "DBA",
+#                           host = "172.31.24.12", port = 5432,
+#                           user = "postgres", password = "facoep2017")
 
 
-dbWriteTable(conn= con_insercion, name='matriz_clientes', value = bigMatrix,
-             overwrite=FALSE, append=TRUE, row.names= FALSE)
+#dbWriteTable(conn= con_insercion, name='matriz_clientes', value = bigMatrix,
+#             overwrite=FALSE, append=TRUE, row.names= FALSE)
 
-#write.csv(bigMatrix,"Matriz al 31-07-2022.csv",row.names = FALSE)
+write.csv(SaldoHistorico,"historico_Saldos1.csv",row.names = FALSE)
 
 lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
+
+
+#SELECT 
+#tipocomprobantecodigo,
+#sum(comprobantetotalimporte) 
+
+#FROM comprobantes 
+#WHERE comprobanteentidadcodigo = 159 AND
+#comprobantefechaemision BETWEEN '1998-01-01' AND '2022-07-31'
+
+#GROUP BY tipocomprobantecodigo
