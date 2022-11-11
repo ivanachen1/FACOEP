@@ -326,6 +326,37 @@ GetSaldosDeuda <- function(dataframeClientes,dataframeFacturado,dataframeNc,data
   return(Matriz)
 }
 
+GetNewSaldosDeuda <- function(clientes,fecha_corte){
+  
+  query <- glue("SELECT * FROM saldos_clientes WHERE fecha = '{fecha_corte}'")
+  
+  drv <- dbDriver("PostgreSQL")
+  
+  con <- dbConnect(drv, dbname = "DBA",
+                             host = "172.31.24.12", port = 5432,
+                             user = "postgres", password = "facoep2017")
+  
+  data <- dbGetQuery(query,conn = con)
+  data$clienteid <- as.integer(data$clienteid)
+  
+  df <- left_join(clientes,data, by = ('clienteid' = 'clienteid'))
+  
+  df["saldo"][is.na(df["saldo"])] <- 0
+  
+  df$SaldoHistorico <- as.numeric(df$saldo)
+  
+  df$fecha <- NULL
+  df$clientenombre <- NULL
+  df$saldo <- NULL
+  
+  dbDisconnect(conn = con)
+  
+  return(df)
+  
+}
+
+data <- GetNewSaldosDeuda(clientes = Clientes,'2022-07-31')
+
 matrixFormat <- function(Matriz){
   
   Matriz$porcentaje_cliente <- paste(round(Matriz$porcentaje_cliente * 100,2),"%",sep = "")
