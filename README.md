@@ -1,8 +1,15 @@
-# FACOEP - DBA 
+# FACOEP Data Warehouse
 
-En este repositorio se realizan los reportes de FACOEP. El mismo Posee:
+Repositorio oficial de procesos analíticos y documentación del Data Warehouse FACOEP.
 
-* Scripts en Lenguaje R
-* Origenes de datos CSV y XLSX
-* Conexiones con PostgreSQL
-* Achivos en Power BI Desktop
+## Contenido
+
+- docs/: documentación funcional y técnica
+- sql/: queries del modelo
+- r/: procesos históricos
+- python/: nuevos procesos ETL
+- powerbi/: modelos BI
+
+## Objetivo
+
+Centralizar conocimiento para humanos e IA.
