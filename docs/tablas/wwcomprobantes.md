@@ -166,6 +166,9 @@ Esta clasificación facilita:
 | NCBASI | Créditos ASI | Nota de Crédito | ASI |
 | NDAASI | Débitos ASI | Nota de Débito | ASI |
 | NDASIB | Débitos ASI | Nota de Débito | ASI |
+| NOTADB | Comprobante interno Impugnaciones Facoep | Impugnaciones FACOEP | FACOEP |
+
+Nota: las NOTADB son los unicos tipos de comprobantes que reflejan las imnpugnaciones de las obras sociales o clientes. Si una impugnacion es aceptada, se crea una Nota de Credito de Facoep para descontarle saldo de deuda al cliente
 
 
 ## Owner
