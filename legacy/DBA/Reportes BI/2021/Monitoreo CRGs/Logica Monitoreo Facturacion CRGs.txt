@@ -1,0 +1,40 @@
+-- tipocomprobantecodigo,comprobanteprefijo,comprobantecodigo,comprobantepprid,comprobantecrgnro,comprobantecrgdetpractica,comprobantecrgdetimportefactur
+
+-- LEFT JOIN con comprobantes tipocomprobantecodigo,comprobanteprefijo,comprobantecodigo,comprobantefechaemision
+
+-- LEFT JOIN CRG DISTINCT crgfchemision
+
+-- LEFT JOIN con proveedorprestador
+
+-- LEFT JOIN con obrassociales
+
+--LEFT JOIN con la tabla universo
+
+SELECT CONCAT(det.tipocomprobantecodigo,'-',det.comprobanteprefijo,'-',det.comprobantecodigo) as factura,
+	   det.comprobantecrgnro,
+	   det.comprobantecrgdetpractica,
+	   det.comprobantecrgdetimportefactur,
+	   aux2.id_detalle,
+	   aux2.id_test
+	   
+	   FROM comprobantecrgdet as det
+	   
+	   LEFT JOIN crgdet
+	   ON det.comprobantepprid = crgdet.pprid AND det.comprobantecrgnro = crgdet.crgnum AND det.comprobantecrgdetid = crgdet.crgdetid
+	   
+	   LEFT JOIN(SELECT DISTINCT 
+                                      det.pprid,
+                                      det.crgnum,
+                                      det.crgdetnumerocph,
+                                      CONCAT(det.pprid ,'-',det.crgnum,'-',det.crgdetnumerocph) as id_test,
+                                      CONCAT(det.pprid ,'-', det.crgnum) as id_detalle,
+				 					  crg.crgfchemision
+                                      
+                                      FROM crgdet det
+				 					  LEFT JOIN crg 
+				 					  ON det.pprid = crg.pprid AND det.crgnum = crg.crgnum 
+				 					  WHERE det.crgdetpractica IN ('IAC.01', 'IAC.02', 'IAC.03', 'COV.16', 'COV.17')) as aux2
+	   
+	   ON CONCAT(det.comprobantepprid ,'-', det.comprobantecrgnro) = aux2.id_detalle
+	   
+	   WHERE det.tipocomprobantecodigo IN ('FACA2', 'FACB2', 'FAECA', 'FAECB') AND aux2.id_test IS NOT NULL

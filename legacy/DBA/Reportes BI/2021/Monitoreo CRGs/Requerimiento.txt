@@ -1,0 +1,5 @@
+Lo que hay que dejar en claro seria algo asi (internamente o externamente):
+
+Hay X cantidad de Recibos generados desde el DD/MM/AAAA (esto a nivel comprobantes)
+Hay X cantidad de recibos sin apertura y X cantidad de recibos con apertura(Esto a nivel comprobanteCrg)
+De los que tienen apertura hay X cantidad de recibos con a nivel practica y hay X cantidad de recibos a nivel cabecera (Esto es a nivel ComprobanteCrgDet)

@@ -1,0 +1,36 @@
+SELECT 
+imp.empcod,
+imp.sucursalcodigo,
+imp.sucursalcodigo,
+imp.comprobantetipoentidad,
+imp.comprobanteentidadcodigo,
+imp.tipocomprobantecodigo,
+imp.comprobanteprefijo,
+imp.comprobantecodigo,
+imp.comprobanteimputaciontipo,
+imp.comprobanteimputacionprefijo,
+imp.comprobanteimputacioncodigo,
+imp.comprobanteimputacionfecha,
+imp.comprobanteimputacionimporte,
+aux.comprobantefechaemision,
+aux.comprobantetotalimporte,
+tipo.tipocomprobantesigno,
+tipo.tipocomprobantetipoasi
+
+FROM comprobantesimputaciones as imp
+
+LEFT JOIN comprobantes as aux
+ON 
+imp.comprobanteimputacioncodigo = aux.comprobantecodigo AND
+imp.comprobanteimputaciontipo = aux.tipocomprobantecodigo AND
+imp.comprobanteimputacionprefijo = aux.comprobanteprefijo
+
+LEFT JOIN (SELECT tipocomprobantecodigo,
+		   tipocomprobantesigno,
+		   tipocomprobantetipoasi FROM tipocomprobante 
+		   WHERE sucursalcodigo = 2) as tipo
+ON aux.tipocomprobantecodigo = tipo.tipocomprobantecodigo
+
+WHERE imp.sucursalcodigo = 2 AND imp.comprobantetipoentidad = 2 AND
+imp.empcod = 'ASI' AND aux.comprobantefechaemision <= '2022-07-31'
+# Meter la condicion tiposcomprobanteslistados en la funcion

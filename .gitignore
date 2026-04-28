@@ -1,0 +1,7 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+## Power BI source control.
+.commit
+*.pbix

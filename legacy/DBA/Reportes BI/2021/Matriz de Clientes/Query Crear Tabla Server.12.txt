@@ -1,0 +1,21 @@
+CREATE TABLE matriz_clientes(
+clienteid VARCHAR,
+clientenombre VARCHAR,
+SaldoHistorico VARCHAR,
+importe_facturado VARCHAR,
+importe_notacredito VARCHAR,
+importe_recibos VARCHAR,
+importe_impugnado VARCHAR,
+Facturacion_Neta_Cliente VARCHAR,
+Facturacion_Neta_Total VARCHAR,
+porcentaje_cliente VARCHAR,
+porcentaje_facturado_acumulado VARCHAR,
+porcentaje_cobrado_cliente VARCHAR,
+Categoria_facturacion VARCHAR,
+Categoria_impugnaciones VARCHAR,
+Categoria_Cobranzas VARCHAR,
+Tipo_Cliente VARCHAR,
+inicio_analisis DATE,
+fin_analisis DATE,
+inicio_revision DATE
+)

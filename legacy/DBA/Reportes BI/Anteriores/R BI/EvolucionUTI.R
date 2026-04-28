@@ -1,0 +1,60 @@
+############################################ LIBRERIAS ########################################################
+library(data.table)
+library(tidyverse)
+library(stringr)
+library(openxlsx)
+library(scales)
+library(formattable)
+library(stringr)
+library(plyr)
+library(zoo)
+library("RPostgreSQL")
+pw <- {"facoep2017"} 
+drv <- dbDriver("PostgreSQL")
+con <- dbConnect(drv, dbname = "facoep", host = "172.31.24.12", port = 5432, user = "postgres", password = pw)
+rm(pw)
+meses <- c("01 - Enero","02 - Febrero","03 - Marzo",
+           "04 - Abril","05 - Mayo","06 - Junio",
+           "07 - Julio","08 - Agosto","09 - Septiembre",
+           "10 - Octubre","11 - Noviembre","12 - Diciembre")
+alafecha <- as.Date(Sys.Date())
+realizacion <- Sys.time()
+setwd(Resultados)
+##########################################################################################################
+
+Consulta <- dbGetQuery(con, "SELECT i.informehospnro,  max(informehospunidadid),afinumdoc,
+                                    informehospunidadinternacion, informehospunidadingresofechah as ingreso, 
+                                    informehospunidadegresofechaho as egreso,informehospegresofechahora,
+                                    CASE WHEN informehospprestmodo = 1 THEN 'Capita' ELSE '' END
+                                    ||
+                                    CASE WHEN informehospprestmodo = 2 THEN 'ExtraCapita' ELSE '' END 
+                                    ||
+                                    CASE WHEN informehospprestmodo = 3 THEN 'ExtraCapita' ELSE '' END as capita,
+                                    diagdescripcion as Diagnostico
+                                    
+                              FROM informehospunidad iu
+                              LEFT JOIN informehosp i ON i.informehospnro = iu.informehospnro
+                              LEFT JOIN proveedorprestador pp ON pp.pprid = i.informehospefectorid
+                              LEFT JOIN diagnosticos d ON d.diagcodigo = i.informehospdiagprincipalid
+                              LEFT JOIN afiliado af on af.afinumbeneficio = i.afinumbeneficio and 
+                              							     af.afinumbenid = i.afinumbenid
+                              							     
+                              WHERE informehospunidadinternacion = 1 and i.afitpamiprofe = 1 and informehospingresofechahora >= '2020-01-01' and
+                              
+                                                                         informehospunidadingresofechah <= '2021-01-06' and 
+                                                                         (informehospunidadegresofechaho > '2021-01-05' OR informehospunidadegresofechaho IS NULL) and
+                                                                         (informehospegresofechahora > '2021-01-06' OR informehospegresofechahora IS NULL)
+                                                                         
+                              GROUP BY i.informehospnro, informehospunidadid,afinumdoc, informehospunidadinternacion, informehospunidadingresofechah, informehospunidadegresofechaho,informehospegresofechahora, informehospprestmodo,diagdescripcion
+                              ORDER BY informehospnro")
+Consulta$diagnostico <- ifelse(Consulta$diagnostico %like% "CORONAV", "CoVid 19", "Otros")
+Consulta <- Consulta[!duplicated(Consulta$afinumdoc),]
+
+Consulta <- select(Consulta, "Fecha" = ingreso,
+                             "Informe" = informehospnro,
+                             "Capita" = capita,
+                             "Diagnostico" = diagnostico)
+
+Consulta$Fecha <- as.Date("2021-01-06")
+write.csv(Consulta, "UTI.csv")
+lapply(dbListConnections(drv = dbDriver("PostgreSQL")), function(x) {dbDisconnect(conn = x)})
