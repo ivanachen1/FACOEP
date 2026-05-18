@@ -84,7 +84,36 @@ Todas en la base SIF (`10.22.1.44 / SIF`).
 
 ### estados_crg
 
-Lectura directa del Excel `crg_estados.xlsx`. Se usa en `crg.estado_actual`.
+Lectura directa del Excel `crg_estados.xlsx`. Se usa en `crg.estado_actual` (decodifica el `crgestado` numérico de Producción en una descripción legible).
+
+#### Catálogo completo
+
+| id | estado |
+|---|---|
+| 1 | Ingresado |
+| 2 | Remitido |
+| 3 | Proforma |
+| 4 | Facturado |
+| 5 | Remitir Factura |
+| 6 | Envio GCBA |
+| 7 | Liquido Producto |
+| 8 | Comisiones Liquidadas |
+| 9 | Auditado |
+| 10 | Pendiente Medico |
+| 11 | Asignado |
+| 12 | Pendiente Administrativo |
+| 13 | Pendiente Corrección |
+| 14 | Reingresado |
+| 15 | Eliminado |
+| 16 | Eliminado por el Efector |
+| 17 | Pendiente Correccion FACOEP |
+| 18 | No Facturable |
+
+> Este catálogo es **crítico para queries** que filtran por estado del CRG. Recordar:
+> - `crg.estado_actual` en SIF guarda la **descripción** (string), no el id.
+> - En Producción `facoep.crg.crgestado` guarda el **id numérico**.
+> - Para filtrar "solo facturados" desde el DW: `WHERE estado_actual = 'Facturado'` (o `WHERE crgestado = 4` si se va contra Producción).
+> - Estados "operativos" típicos en el flujo: 1 → 9 → 11 → 4. Los 15/16/18 indican CRGs que no continúan el flujo.
 
 ### financiadores
 

@@ -150,6 +150,34 @@ Si `obsocialesnofacturable` es nulo se asume `FALSE`. Luego:
 
 Los identificadores técnicos se eliminan del DataFrame final.
 
+### Catálogo de estados del CRG
+
+El campo `estado_actual` guarda la **descripción** del estado decodificada desde `estados_crg`. Para filtrar / interpretar correctamente:
+
+| id (`crgestado` en origen) | `estado_actual` (en DW SIF) |
+|---|---|
+| 1 | Ingresado |
+| 2 | Remitido |
+| 3 | Proforma |
+| 4 | Facturado |
+| 5 | Remitir Factura |
+| 6 | Envio GCBA |
+| 7 | Liquido Producto |
+| 8 | Comisiones Liquidadas |
+| 9 | Auditado |
+| 10 | Pendiente Medico |
+| 11 | Asignado |
+| 12 | Pendiente Administrativo |
+| 13 | Pendiente Corrección |
+| 14 | Reingresado |
+| 15 | Eliminado |
+| 16 | Eliminado por el Efector |
+| 17 | Pendiente Correccion FACOEP |
+| 18 | No Facturable |
+
+> Catálogo mantenido por el proceso `tablas_lookup` (ver `docs/tablas/tablas_lookup.md` → "estados_crg").
+> **Importante para queries:** filtrar por `WHERE estado_actual = 'Facturado'` desde el DW. Si se consulta directamente Producción, usar `WHERE crgestado = 4`.
+
 ### Limpieza
 
 - `nombre_proveedor` se aplica `str_trim`.

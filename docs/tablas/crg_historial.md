@@ -92,6 +92,36 @@ Se hace `LEFT JOIN proveedorprestador ON pprid` para obtener el nombre del efect
 
 Se cruza `id_estado` contra el Excel `crg_estados_tabla_historial.xlsx` para traer la descripción legible del estado.
 
+### Catálogo de estados (mismo set que `estados_crg`)
+
+| id | estado |
+|---|---|
+| 1 | Ingresado |
+| 2 | Remitido |
+| 3 | Proforma |
+| 4 | Facturado |
+| 5 | Remitir Factura |
+| 6 | Envio GCBA |
+| 7 | Liquido Producto |
+| 8 | Comisiones Liquidadas |
+| 9 | Auditado |
+| 10 | Pendiente Medico |
+| 11 | Asignado |
+| 12 | Pendiente Administrativo |
+| 13 | Pendiente Corrección |
+| 14 | Reingresado |
+| 15 | Eliminado |
+| 16 | Eliminado por el Efector |
+| 17 | Pendiente Correccion FACOEP |
+| 18 | No Facturable |
+
+> Este catálogo es el mismo que el de `estados_crg` (ver `docs/tablas/tablas_lookup.md`). En `crg_historial` cada fila representa un movimiento de estado, por lo que el `id_estado` puede tomar cualquiera de estos valores en la línea de tiempo del CRG.
+>
+> **Para queries sobre transiciones de estado:**
+> - "Cuándo se ingresó un CRG" → `WHERE id_estado = 1` y tomar `MIN(fecha)`.
+> - "Cuándo se facturó" → `WHERE id_estado = 4`.
+> - "Cuándo se auditó" → `WHERE id_estado = 9`.
+
 ### Limpieza
 
 `nombre_proveedor` se aplica `str_trim`.
